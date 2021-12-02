@@ -29,17 +29,15 @@ cd -P -- "$(dirname -- "$0")" && pwd -P
 )
 cd "$dir"
 echo "$bg_blue$white Hello I am More_info.sh$reset"
-
 source tmp/tmp_Bash
-echo "---> Album Title : $Album_Title"
-
+echo "${white}---> Album Title : ${orange}$Album_Title"
+echo "${white}---> The disk number is $DiscNumber ${white}the track number is ${orange}$tractNumber"
 
 parentdir="$(dirname "$dir")"
 if [ -f diskinfo/ALBUMNAME ]
 then
 albuminfo=$(cat diskinfo/ALBUMNAME)
 fi
-
 if [ "$Album_Title" == "$albuminfo" ]
 then
 echo "${white}---> ${green} Same album found keeping ${orange}diskinfo directory"
@@ -61,13 +59,16 @@ echo  "$Album_Title" > diskinfo/ALBUMNAME
 cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n' |awk -F'class="body_' '{print $2}' |awk -F'class="main_2FbVC"' '{print $1}' | sed 's/<th/\
 <th/g' | awk '/<th/' |awk -F'="row">' '{print $2}'> diskinfo/temp.html
 
-cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n' |awk -F'<h3>Tracklist</h3>' '{print $2}' | sed 's/<tr/\
+cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n' |awk -F'<h3>Tracklist</h3>' '{print $2}'|awk -F'</section>' '{print $1}'| sed 's/<tr/\
 <tr/g' | awk '/<tr/' > diskinfo/temp2.html
 fi
 
 if [ -f diskinfo/test.csv ]
 then
 rm diskinfo/test.csv
+fi
+if [ -f diskinfo/1_info.csv ]
+then
 rm  diskinfo/*_info.csv
 fi
 
@@ -81,52 +82,35 @@ set -f          # disable globbing
 
 for TheLineInfoOnTrack in $(cat diskinfo/temp2.html)
 do
-
 #|awk -F'<td class="artist' '{print $2}'|awk -F'>' '{print $2}'
 TrackLine=$(echo "$TheLineInfoOnTrack" |awk -F'</tr>' '{print $1}' |sed 's/<tr/\
 <tr/g')
 TrackTitleDSC=$(echo "$TrackLine" | awk -F'<td class="trackTitle_CTKp4"><span class="trackTitle_CTKp4">' '{print $2}'| sed "s/\&#x27;/'/g"| sed 's/\&quot;/"/g'| awk -F'<' '{print $1}')
+
 #echo  |awk NF >> A.txt
 credits=$(echo "$TrackLine" | awk -F'<div class="credits_12-wp expanded_3odiy">' '{print $2}' | awk -F'aria-hidden="true">' '{print $1}' |sed 's/<\/span>,/\
 <\/span>,/g'|sed 's/<\/span> – <span/\
 /g'|sed 's/<div><span>/\
 /g'|awk NF |awk '{print $0}')
 track_title="$TrackTitle"
-
-function talk()
-{
-echo -e "$credits"|while read artistonthesong
+TrackPostition=$(echo "$TrackLine" |awk -F'data-track-position="' '{print $2}'|awk -F'"' '{print $1}' |sed 's/<tr/\
+<tr/g')
+echo "$white$credits"
+IFS=$'\n'       # Processing line
+set -f          # disable globbing
+echo "$purple$credits"
+for cdreditInfo in $(echo "$credits")
 do
-Job=$(echo "$artistonthesong" |awk '$0 !~ /\/artist\//'|awk NF|awk '{print $0"ENDCELL"}')
-ArtistLink=$(echo "$artistonthesong" | awk  '/artist/' | awk  -F'/artist/' '{print "/artist/"$2}'| awk  -F'"' '{print $1"ENDCELL"}'|awk NF)
-ArtistGUID=$(echo "$artistonthesong" | awk  '/artist/' | awk  -F'/artist/' '{print $2}'| awk  -F'"' '{print $1"ENDCELL"}'|awk NF)
-ArtistID=$(echo "$artistonthesong" | awk  '/artist/' | awk  -F'/artist/' '{print $2}'| awk  -F'-' '{print $1"ENDCELL"}'|awk NF)
-ArtistHumanName=$(echo "$artistonthesong" | awk  '/artist/' | awk  -F'/artist/' '{print $2}'| awk  -F'>' '{print $2}'| awk  -F'<' '{print $1}'|awk NF)
-echo "jobintrack-$Job" |awk NF
-echo "$ArtistLink" |awk NF |tr -d ' '
-echo "$ArtistGUID" |awk NF
-echo "$ArtistID" |awk NF
-echo "$ArtistHumanName" |awk NF
+#echo "$white$TrackTitleDSC"
+
+artistAdress=$(echo $cdreditInfo|sed 's/<a href="\/artist/\
+\/artist/g' | awk -F'"' '{print $1}'|awk 1 ORS=' ' |sed 's/  class= /|/g')
+echo "$artistAdress aaa"
+#echo $red $artistAdress
+
 done
-}
-Songinfo=$(talk | awk NF|awk NF|sed 's/\ \ //g')
-echo $Songinfo |sed 's/ENDCELL /|/g'> diskinfo/b
-echo $TrackTitleDSC |sed 's/ENDCELL /|/g'> diskinfo/a
-#echo $ArtistID  |sed 's/ENDCELL /|/g'> c
-paste -d '|' diskinfo/a diskinfo/b | sed -e '/^|/d'>> diskinfo/test.csv
-#rm tracttitle.txt
-# print lines where /artist is not present
-# |awk '$0 !~ /\/artist\//'
 
-
-#|sed 's/<div><span>/\
-#/g'# | awk -F'/artist/' '{print $2}'
-#echo $orange "$credits"
-
-#TrackArtist=$(echo $TrackLine|)
-#<td class="trackTitle_
-#cat A.txt |awk NF >> Tract.txt
-
+#echo "$blue$credits" |awk 1 ORS=' ' |sed 's/  class= /|/g'
 done
 
 if [ -f diskinfo/artist_listTMP ]
@@ -135,15 +119,75 @@ rm diskinfo/artist_listTMP
 fi
 
 #cat test.txt |sed 's/\[31m//g' |awk NF >> Tract.txt
-
+if [ -f diskinfo/test.csv ]
+then
 matchtitle=$(awk -F'|' -v "track_title"="$track_title" '$1=='track_title'' diskinfo/test.csv)
-#echo $purple matchtitle $white $matchtitle
+echo $green matchtitle $matchtitle
+Nmbrofresult=$(echo "$matchtitle"|wc -l)
+# S'il y a plusieurs chansons du même nom dans l'album
+if [ "$Nmbrofresult" -ge "2" ]
+then
 echo "$matchtitle"|sed 's/\/artist\//\
-\/artist\//g'
-echo "$matchtitle"|sed 's/jobintrack-/\
+\/artist\//g'|sed 's/jobintrack-/\
+/g' |sed '1d'> diskinfo/artist_listTMP
+echo "Artist-address|ArtistID|Artist_TID|Artist" > diskinfo/artist_list.csv
+cat diskinfo/artist_listTMP |sed '1d'|awk -F'|' '$2!=""' OFS='\t|\t' |sed 's/\&#x27;/"/g'|sed 's/\&amp;/n/g'|sed 's/\&quot;/"/g' >> diskinfo/artist_list.csv
+if [ -f diskinfo/artist_list_Menu ]
+then
+rm diskinfo/artist_list_Menu
+fi
+cat diskinfo/artist_list.csv |sed '1d'|awk -F'|' '{print $2, $4, $5}' OFS='|'>> diskinfo/artist_list_Menu
+echo "${white}---> Current track is Disk $DiscNumber ${white} track ${orange}$tractNumber"
+echo "${bg_red}${white}---> There are mutiple result for this track with the name ${orange}$track_title ${white}<---${reset}"
+
+# ### Menu de séléction Song
+# ### Menu de séléction début
+ResultatsMultiples=$(cat diskinfo/artist_list_Menu | awk -F'|'  '{print $3, $1, $2 }' OFS='\t|\t' )
+#cp tmp/search_results_Album tmp/search_results_Album0111
+
+echo " Track position |         Artist ID           |Artist Name"
+SELECTION=1
+while read -pru line
+do
+echo "${orange}########################################################################################################################################################
+$SELECTION) $line${reset}"
+((SELECTION++))
+done <<< "$ResultatsMultiples"
+((SELECTION--))
+echo "${bg_blue}${white}########################################################################################################################################################
+#    Il y a ${Nmbrofresult} résultats numéroté de 1 à ${Nmbrofresult} - Choisir parmis ces choix - puis enter
+########################################################################################################################################################${reset}"
+read -p "Selection :" opt
+if [[ `seq 1 $SELECTION` =~ $opt ]]; then
+echo $red$opt
+fi
+
+
+
+echo "$matchtitle"|sed 's/\/artist\//\
+\/artist\//g'|sed 's/jobintrack-/\
 /g' |sed '1d'> diskinfo/artist_listTMP
 echo "Artist-address|ArtistID|Artist_TID|Artist" > diskinfo/artist_list.csv
 cat diskinfo/artist_listTMP |sed '1d'|awk -F'|' '$2!=""' |sed 's/\&#x27;/"/g'|sed 's/\&amp;/n/g'|sed 's/\&quot;/"/g' >> diskinfo/artist_list.csv
+
+cat diskinfo/artist_listTMP
+
+
+
+
+
+
+
+
+
+else
+echo "$matchtitle"|sed 's/\/artist\//\
+\/artist\//g'|sed 's/jobintrack-/\
+/g' |sed '1d'> diskinfo/artist_listTMP
+echo "Artist-address|ArtistID|Artist_TID|Artist" > diskinfo/artist_list.csv
+cat diskinfo/artist_listTMP |sed '1d'|awk -F'|' '$2!=""' |sed 's/\&#x27;/"/g'|sed 's/\&amp;/n/g'|sed 's/\&quot;/"/g' >> diskinfo/artist_list.csv
+fi
+
 
 function songinfo() {
 count=00
@@ -172,6 +216,7 @@ cat diskinfo/tmpjob | sed 's/@tobejobremovedbefore/\
 
 for jobsline in $(cat diskinfo/tmpjob2)
 do
+#echo "$purple $jobsline"
 InfoNumber=$(echo "$jobsline" |awk -F'|' '{print $2}')
 numberseul=$(echo "$jobsline" |awk -F'|' '{print $2}'|awk -F'_' '{print $1}')
 KindOfJob=$(echo "$jobsline" |awk -F'|' '{print $3}'|sed 's/\&#x27;/"/g'|sed 's/\&amp;/n/g'|sed 's/\&quot;/"/g')
@@ -179,8 +224,10 @@ JobPeople=$(echo "$jobsline" |awk -F'|' '{print $4}')
 echo ""$numberseul"_pers|"$InfoNumber"
 "$JobPeople"|"$KindOfJob"" > diskinfo/"$InfoNumber".csv
 echo "$red$KindOfJob|$white$JobPeople"
-
+echo $purple DEBUG END LOOP
 done
+echo $purple DEBUG OUT LOOP
+fi
 
 if [ -f diskinfo/1_info.csv ]
 then
@@ -269,6 +316,8 @@ fi
 paste -d '|' diskinfo/1_info.csv diskinfo/2_info.csv diskinfo/3_info.csv diskinfo/4_info.csv diskinfo/5_info.csv diskinfo/6_info.csv diskinfo/7_info.csv diskinfo/8_info.csv diskinfo/9_info.csv diskinfo/10_info.csv > diskinfo/Trackinfo.csv
 mv diskinfo/Trackinfo.csv tmp/Trackinfo.csv
 
+echo $puple before tmp/Trackinfo.csv
+cat tmp/Trackinfo.csv
 IFS=$'\n'       # Processing line
 set -f          # disable globbing
 for thelinerow in $(cat diskinfo/temp.html)
@@ -338,10 +387,13 @@ echo $purple$RowType
 
 
 done
-
+if [ -f diskinfo/styletmp ]
+then
 echo "GenreGUID|GenreHref|Genre" > diskinfo/style.csv
 cat diskinfo/styletmp  | awk '!/<a href=/' |awk NF >> diskinfo/style.csv
 rm diskinfo/styletmp
+fi
+
 echo "LabelGUID|HRefLabel|LabelInnerHTML|labelNumber" > diskinfo/label.csv
 cat diskinfo/labeltmp | awk '!/<a href=/'|awk NF >> diskinfo/label.csv
 echo $purple "$Path2album"/_album_info/             "$Path2album"/_album_info/

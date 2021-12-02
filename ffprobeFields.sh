@@ -27,8 +27,8 @@ dir=$(
 cd -P -- "$(dirname -- "$0")" && pwd -P
 )
 cd "$dir"
-echo "${WHITE}---> JE SUIS                    : ${green}ffprobeFields.sh
-${whithe}---> Je trouve les métdatas present dans le fichier audio"
+echo "${bg_blue}${white}---> JE SUIS                                          : ffprobeFields.sh <---${reset}
+${white}---> Je trouve les métdatas present dans le fichier audio"
 source tmp/tmp_Bash
 # Remove Albume info title
 awk '!/      title           :/' tmp/temp_info.txt > tmp/temp_info2.txt && mv tmp/temp_info2.txt tmp/temp_info.txt
@@ -40,15 +40,7 @@ S1=$(echo $thefilelist| awk -F':' '{print $1}' | tr -d ' '|awk NF | sed 's/"/\\"
 S2=$(echo $thefilelist| awk -F': ' '{print $2}'|awk NF)
 echo "$S1
 $S2" > tmp/"$S1".csv
-echo "$white---> Processing lookink for     : $orange$thefilelist"
-
-#for allcsv in tmp/*.csv
-#do
-#FileDate=$(date +%Y_%m_%d_%Hh%Mm%Ss | tr "/" "_")
-#outname=$( echo $allcsv| sed 's/tmp\///g'| sed 's/.csv/.txt/g')
-#cp $allcsv $dir/$FileDate$outname
-#done
-#echo $red$thefilelist
+echo "${white}---> Processing lookink for                           : $orange$thefilelist"
 done < tmp/temp_info.txt
 source tmp/tmp_Bash
 if [ -f tmp/_album_info/DiscTotal.csv ]
@@ -155,45 +147,16 @@ DiscNumber=$(cat tmp/_album_info/current_disc.csv | awk  'NR == 2')
 fi
 if [ -z "$DiscNumber" ]
 then
-echo "${white}---> Default Disc N# is         :${orange} 1"
+echo "${white}---> Default Disc N# is                               :${orange} 1"
 DiscNumber=1
 else
 DiscNumber=$DiscNumber
-echo "${white}---> Disc N# is                 :${green} $DiscNumber"
+echo "${white}---> Disc N# is                                       :${green} $DiscNumber"
 fi
-#echo $purple $DiscNumber
-#for allcsv in tmp/_album_info/*.csv
-#do
-#FileDate=$(date +%Y_%m_%d_%Hh%Mm%Ss | tr "/" "_")
-#outname=$( echo $allcsv| sed 's/tmp\/_album_info\///g'| sed 's/.csv/.txt/g')
-#cp $allcsv $dir/$FileDate$outname
-#done
-
 #
 ### For Directories
 ##
 mkdir -p tmp/_album_info/Disc_"$DiscNumber"/
-#cp tmp/_album_info/current_track.csv tmp/_album_info/"$tractNumber"_track.csv
-
-
-
-
-## Parliament / Funkadelic
-## LOCATION
-#if [[ -f "tmp/LOCATION.csv" && -s "tmp/LOCATION.csv" ]]
-##if [ -f tmp/LOCATION.csv ]
-#then
-#echo "${white}---> Location ${green}Found"
-#mkdir -p "$Path2album"/_album_info
-#echo "Album_ADDRESS" > "$Path2album"/_album_info/Album_ADDRESS.csv
-#cat tmp/LOCATION.csv | awk  'NR == 2' >> "$Path2album"/_album_info/Album_ADDRESS.csv
-#fi
-
-
-
-
-
-
 
 # TITLE TRACK
 if [ -f tmp/TITLE.csv ]
@@ -276,7 +239,6 @@ cat tmp/DURATION.csv | sed 's/duration/Duration/g' | sed 's/DURATION/Duration/g'
 rm tmp/DURATION.csv
 fi
 Duration=$(cat tmp/_album_info/Disc_"$DiscNumber"/Duration_track_"$tractNumber".csv | awk  'NR == 2')
-
 
 # Genre
 if [ -f "$Path2album/Genre.csv" ]
@@ -428,7 +390,26 @@ fi
 YEAR=$(cat tmp/_album_info/Disc_"$DiscNumber"/Year_"$tractNumber".csv | awk  'NR == 2')
 
 
-
+# Discogs id in id3 tag
+mkdir -p "$Path2album"/_album_info/CSVs/
+if [ -f tmp/DISCOGSID.csv ]
+then
+echo "${green}---> DISCOGSID has been found in the current ID3 tags : ${orange}tmp/DISCOGSID.csv"
+if [ -f "$Path2album"/_album_info/CSVs/DISCOGSID.csv ]
+then
+echo "${white}---> DISCOGSID has been found in _album_info source   : ${red}"$Path2album"/_album_info/CSVs/DISCOGSID.csv"
+txtfileDISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv|awk 'NR == 2')
+echo "${green}---> The DISCOGSID id in the CSVs folder will be used : ${orange}$txtfileDISCOGSID"
+DISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv| awk  'NR == 2')
+echo "DISCOGSID=\"$DISCOGSID\"" >> tmp/tmp_Bash
+else
+cat tmp/DISCOGSID.csv > "$Path2album"/_album_info/CSVs/DISCOGSID.csv
+DISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv| awk  'NR == 2')
+echo "DISCOGSID=\"$DISCOGSID\"" >> tmp/tmp_Bash
+fi
+else
+echo "${green}---> No DISCOGSID id found at this point"
+fi
 # bash_tmp profile
 source tmp/tmp_Bash
 extension="${thefilelist##*.}"
@@ -454,16 +435,16 @@ Date=\"$Date\"
 YEAR=\"$YEAR\"
 FileSize=\"$FileSize\"
 ISRC=\"$ISRC\"
+DISCOGSID=\"$DISCOGSID\"
 " >> tmp/tmp_Bash2
 echo "TrackTitle=\$(cat tmp/_album_info/title_\"\$DiscNumber\"_\"\$tractNumber\".csv| awk  'NR == 2')" >> tmp/tmp_Bash2
 
 echo "Album_Title=\$(cat tmp/_album_info/Album_Title.csv| awk  'NR == 2')" >> tmp/tmp_Bash2
-
-
-
-
-paste -d'|' tmp/_album_info/Album_Title.csv tmp/current_artist.csv tmp/_album_info/current_disc.csv tmp/_album_info/DiscTotal.csv tmp/_album_info/current_track.csv tmp/_album_info/Disc_"$DiscNumber"/TracksTotal.csv tmp/_album_info/title_"$DiscNumber"_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Duration_track_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Genre_track_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Audio_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Album_Artist.csv tmp/_album_info/Disc_"$DiscNumber"/Comment_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Label.csv tmp/_album_info/Disc_"$DiscNumber"/Album_Artist.csv tmp/_album_info/Disc_"$DiscNumber"/Year_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/FileSize_"$tractNumber".csv > test.csv
-echo "$thefilelist thefilelist tractNumber $tractNumber DiscNumber $DiscNumber Artist $Artist Album_Title $Album_Title extension $extension TrackTitle $TrackTitle DISCTOTAL $DISCTOTAL TRACKTOTAL $TRACKTOTAL Duration $Duration Audio $Audio LABEL $LABEL ALBUMARTIST $ALBUMARTIST YEAR $YEAR Date $Date fileNoExt $fileNoExt Path2album $red$Path2album FileSize $FileSize Genre $Genre"
+#
+#
+#
+#
+#paste -d'|' tmp/_album_info/Album_Title.csv tmp/current_artist.csv tmp/_album_info/current_disc.csv tmp/_album_info/DiscTotal.csv tmp/_album_info/current_track.csv tmp/_album_info/Disc_"$DiscNumber"/TracksTotal.csv tmp/_album_info/title_"$DiscNumber"_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Duration_track_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Genre_track_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Audio_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Album_Artist.csv tmp/_album_info/Disc_"$DiscNumber"/Comment_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Label.csv tmp/_album_info/Disc_"$DiscNumber"/Album_Artist.csv tmp/_album_info/Disc_"$DiscNumber"/Year_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/FileSize_"$tractNumber".csv > test.csv
 
 mv tmp/tmp_Bash2 tmp/tmp_Bash
-cd -
+cd - &>/dev/null
