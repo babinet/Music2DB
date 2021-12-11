@@ -65,6 +65,9 @@ personName=$(echo "$lineofjob"| sed 's/\/artist\//\
 \/artist\//g'| awk '/\artist\//'|awk -F'/artist/' '{print $2}' |awk -F'>' '{print $2}'|awk -F'<' '{print $1}'| sed 's/\&amp;/\&/g')
 LineArtist=$(echo "$lineofjob"| sed 's/\/artist\//\
 \/artist\//g'|awk '/artist/' )
+echo "$personName personName $addresspesonofthejob addresspesonofthejob $ArtistTID ArtistTID $lineofjob lineofjob
+$white $LineArtist"
+
 # Loop List artist csv
 IFS=$'\n'       # Processing lines
 set -f          # disable globbing
@@ -88,16 +91,13 @@ cat tmp/artistcreditTMP |sed '1d' >> "$Path2album"/_album_info/credits2taxonomyA
 
 
 echo "Artist-address|ArtistID|Artist_TID|Artist" > "$Path2album"/_album_info/credits_Artiss_list.csv
-cat tmp/artistCreditlListTMP | sed 's/\[31m//g'| sed 's/\[97m//g'>> "$Path2album"/_album_info/credits_Artiss_list.csv
+cat tmp/artistCreditlListTMP | sed 's/\[31m//g'| sed 's/\[97m//g'|sed "s/\&#x27;/'/g"| sed 's/\&amp;/\&/g'|sed 's/\&quot;/"/g'>> "$Path2album"/_album_info/credits_Artiss_list.csv
 
-
-
-
+# Album Job Loop
 countjob='0'
 cat "$Path2album"/_album_info/credits2taxonomyAlbum.csv | sed '1d' | while read thelineartist
 do
 countjob=$(( countjob+1 ))
-
 echo "Job_"$countjob"|ArtistTID_"$countjob"
 $thelineartist" |sed 's/\&#x27;/"/g'|sed 's/\&amp;/n/g'|sed 's/\&quot;/"/g' > tmp/job_"$countjob".csv
 done
@@ -235,10 +235,6 @@ echo "Job_10|ArtistTID_10
 |" > tmp/job_10.csv
 fi
 
-
-
-echo $purple $Path2album Path2album
-
 mkdir -p "$Path2album"/_album_info/CSVs tmp
 # Get Master Information
 MasterAlbumAddress=$(cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n' | awk -F'id="release-other-versions"' '{print $2}' |sed 's/\/fr\/master/\/master/g' |awk -F'href="/master' '{print $2}'| awk -F'"' '{print "https://discogs.com/master"$1}')
@@ -357,7 +353,7 @@ done
 if [ -f tmp/tempGenreTMP ]
 then
 echo "Genre_Name|GenreURL" > "$Path2album"/_album_info/CSVs/Genres.csv
-cat tmp/tempGenreTMP >> "$Path2album"/_album_info/CSVs/Genres.csv
+cat tmp/tempGenreTMP |sed "s/\&#x27;/'/g"| sed 's/\&amp;/\&/g'|sed 's/\&quot;/"/g' >> "$Path2album"/_album_info/CSVs/Genres.csv
 fi
 fi
 
@@ -397,7 +393,7 @@ done
 if [ -f tmp/tempStyleTMP ]
 then
 echo "style_Name|StyleURL" > "$Path2album"/_album_info/CSVs/Styles.csv
-cat tmp/tempStyleTMP >> "$Path2album"/_album_info/CSVs/Styles.csv
+cat tmp/tempStyleTMP |sed "s/\&#x27;/'/g"| sed 's/\&amp;/\&/g'|sed 's/\&quot;/"/g'>> "$Path2album"/_album_info/CSVs/Styles.csv
 fi
 fi
 
@@ -415,6 +411,8 @@ echo "${white}---> Current release year of the release              : ${orange}"
 if [ "$CurrentReleaseDate" == "" ]
 then
 echo "${red}---> date is empty"
+echo "ReleaseDate
+" > "$Path2album"/_album_info/CSVs/ReleaseDate.csv
 else
 input="$CurrentReleaseDate"
 re='^[[:digit:]]{4}$'
@@ -431,13 +429,16 @@ fi
 fi
 
 
+if [ -f "$Path2album"/_album_info/jobe_Album.csv ]
+then
+echo "${white}---> Credit job information aready compiled           : ${orange}"$Path2album"/_album_info/jobe_Album.csv"
 
-
+else
+echo "${white}---> computing job information in                     : ${orange}"$Path2album"/_album_info/jobe_Album.csv"
 paste -d '|' tmp/job_10.csv tmp/job_9.csv tmp/job_8.csv tmp/job_7.csv tmp/job_6.csv tmp/job_5.csv tmp/job_4.csv tmp/job_3.csv tmp/job_2.csv tmp/job_1.csv > "$Path2album"/_album_info/jobe_Album.csv
+fi
+
 CreditAlbum=$(cat "$Path2album"/_album_info/jobe_Album.csv| awk  'NR == 2')
-
-
-
 
 
 

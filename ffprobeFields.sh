@@ -109,19 +109,19 @@ if [ -f tmp/TRACK.csv ]
 then
 cat tmp/TRACK.csv | awk -F'/' '{print $1}' | sed 's/track/Track/g' | sed 's/TRACK/Track/g' > tmp/_album_info/tracktmp.csv
 mv tmp/_album_info/tracktmp.csv tmp/_album_info/current_track.csv
-tractNumberTMP=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2')
+tractNumberTMP=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2'| sed 's/^0*//')
 fi
 if [ -f tmp/track.csv ]
 then
 cat tmp/track.csv | awk -F'/' '{print $1}' | sed 's/track/Track/g' | sed 's/TRACK/Track/g' > tmp/_album_info/tracktmp.csv
 mv tmp/_album_info/tracktmp.csv tmp/_album_info/current_track.csv
-tractNumberTMP=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2')
+tractNumberTMP=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2'| sed 's/^0*//')
 fi
 if [ -f tmp/Track.csv ]
 then
 cat tmp/Track.csv | awk -F'/' '{print $1}' | sed 's/track/Track/g' | sed 's/TRACK/Track/g' > tmp/_album_info/tracktmp.csv
 mv tmp/_album_info/tracktmp.csv tmp/_album_info/current_track.csv
-tractNumberTMP=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2')
+tractNumberTMP=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2'| sed 's/^0*//')
 fi
 if [ -z "$tractNumberTMP" ]
 then
@@ -136,7 +136,7 @@ fi
 ##
 ### For Directories
 ##
-tractNumber=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2')
+tractNumber=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2'| sed 's/^0*//')
 # Discinfo File in source folder
 if [ -f "$Path2album"/_album_info/disc.csv ]
 then
@@ -161,13 +161,13 @@ mkdir -p tmp/_album_info/Disc_"$DiscNumber"/
 # TITLE TRACK
 if [ -f tmp/TITLE.csv ]
 then
-cat tmp/TITLE.csv | sed 's/TITLE/Title/g' | sed 's/title/Title/g' > tmp/_album_info/title_"$DiscNumber"_"$tractNumber".csv
+cat tmp/TITLE.csv | sed 's/TITLE/Title/g' | sed 's/title/Title/g' | sed 's/\$/USD/g' | sed "s/\&amp;/'/g" > tmp/_album_info/title_"$DiscNumber"_"$tractNumber".csv
 fi
 if [ -f tmp/title.csv ]
 then
-cat tmp/title.csv | sed 's/TITLE/Title/g' | sed 's/title/Title/g' > tmp/_album_info/title_"$DiscNumber"_"$tractNumber".csv
+cat tmp/title.csv | sed 's/TITLE/Title/g' | sed 's/title/Title/g'| sed 's/\$/USD/g'| sed "s/\&amp;/'/g" > tmp/_album_info/title_"$DiscNumber"_"$tractNumber".csv
 fi
-TrackTitle=$(cat tmp/_album_info/title_"$DiscNumber"_"$tractNumber".csv| awk  'NR == 2')
+TrackTitle=$(cat tmp/_album_info/title_"$DiscNumber"_"$tractNumber".csv| awk  'NR == 2'| sed 's/\$/USD/g'| sed "s/\&amp;/'/g")
 
 # ISRC
 if [ -f tmp/ISRC.csv ]
@@ -366,6 +366,9 @@ echo "$white---> Genrating empty Date"
 echo "Date
 " > tmp/_album_info/Disc_"$DiscNumber"/Date_"$tractNumber".csv
 fi
+
+
+
 Date=$(cat tmp/_album_info/Disc_"$DiscNumber"/Date_"$tractNumber".csv | awk  'NR == 2')
 
 # YEAR
@@ -416,7 +419,6 @@ extension="${thefilelist##*.}"
 
 echo "FileSize
 $FileSize" > tmp/_album_info/Disc_"$DiscNumber"/FileSize_"$tractNumber".csv
-#fileNoExt=$(echo "$thefilelist" |sed "s/.$extension//g")
 cat tmp/tmp_Bash > tmp/tmp_Bash2
 echo "Path2album=\"$Path2album\"
 tractNumber=\"$tractNumber\"
@@ -438,13 +440,7 @@ ISRC=\"$ISRC\"
 DISCOGSID=\"$DISCOGSID\"
 " >> tmp/tmp_Bash2
 echo "TrackTitle=\$(cat tmp/_album_info/title_\"\$DiscNumber\"_\"\$tractNumber\".csv| awk  'NR == 2')" >> tmp/tmp_Bash2
-
 echo "Album_Title=\$(cat tmp/_album_info/Album_Title.csv| awk  'NR == 2')" >> tmp/tmp_Bash2
-#
-#
-#
-#
-#paste -d'|' tmp/_album_info/Album_Title.csv tmp/current_artist.csv tmp/_album_info/current_disc.csv tmp/_album_info/DiscTotal.csv tmp/_album_info/current_track.csv tmp/_album_info/Disc_"$DiscNumber"/TracksTotal.csv tmp/_album_info/title_"$DiscNumber"_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Duration_track_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Genre_track_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Audio_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Album_Artist.csv tmp/_album_info/Disc_"$DiscNumber"/Comment_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/Label.csv tmp/_album_info/Disc_"$DiscNumber"/Album_Artist.csv tmp/_album_info/Disc_"$DiscNumber"/Year_"$tractNumber".csv tmp/_album_info/Disc_"$DiscNumber"/FileSize_"$tractNumber".csv > test.csv
-
 mv tmp/tmp_Bash2 tmp/tmp_Bash
+
 cd - &>/dev/null

@@ -1,3 +1,11 @@
+
+
+
+
+
+#ffmpeg -ss 00:00:00 -i Help\!.flac -t 00:02:23 output.flac
+
+
 #!/bin/bash
 orange=`tput setaf 11`
 bg_orange=`tput setab 178`
@@ -28,8 +36,9 @@ cd -P -- "$(dirname -- "$0")" && pwd -P
 )
 parentdir="$(dirname "$dir")"
 cd $dir
-echo "${white}---> I AM Cue_Rename.sh"
-echo "${white}---> Rename the id3 tags in the sound file from .cue file"
+parentdir="$(dirname "$dir")"
+echo "${white}---> I AM FFmpef_CueSplit.sh"
+echo "${white}---> I Split .flac or .ape to tagged id3 files"
 echo "${white}---> The .cue file must be like bellow:"
 echo 'REM COMMENT "ExactAudioCopy v0.95b4"
 PERFORMER "PRINCE"
@@ -69,8 +78,8 @@ iconv -s -f CP1250 -t UTF-8 "$TheCueFile" > cue_converted
 TheCueFile="cue_converted"
 echo "${white}---> The file encoding is ${orange}$encoding"
 
-    sed -i.bak $'s/\x0D//' "$TheCueFile"
-    tr -d '\n' < "$TheCueFile" | sed 's/TRACK/\
+sed -i.bak $'s/\x0D//' "$TheCueFile"
+tr -d '\n' < "$TheCueFile" | sed 's/TRACK/\
 TRACK/g' |sed '1d' > tmp/Liste4Tag.csv
 if [ -f disk.info ]
 then
@@ -86,13 +95,13 @@ read -p "enter the ${orange}Disc#${white} of the album                        :"
 read -p "enter the ${orange}DISC TOTAL${white} of the album                   :" DISCTOTAL
 read -p "enter the ${orange}Genre${white} of the album comma separated        :" GenreToFile
 #read -p "enter the  ${orange}Front${white} covert image (drop image)         :" AlbumCover
-echo "Album_Title=\"$Album_Title\"
-year=\"$year\"
-ID_DISCOGS=\"$ID_DISCOGS\"
-DiscNumber=\"$DiscNumber\"
-DISCTOTAL=\"$DISCTOTAL\"
-Artist=\"$Artist\"
-GenreToFile=\"$GenreToFile\"" > disk.info
+echo "Album_Title=$Album_Title
+year=$year
+ID_DISCOGS=$ID_DISCOGS
+DiscNumber=$DiscNumber
+DISCTOTAL=$DISCTOTAL
+Artist=$Artist
+GenreToFile=$GenreToFile" > disk.info
 fi
 Album_TID=$(echo $ID_DISCOGS| awk -F'-' '{print $1}')
 Machinamename=$(echo $ID_DISCOGS |sed 's/^[^-]*-//g')
@@ -116,21 +125,21 @@ echo $purple$CurentTrack ${white}CurentTrack
 TrackTitle=$(echo "$ListForTag" | awk -F'TITLE "' '{print $2}'| awk -F'"    ' '{print $1}')
 trackoutput=$(echo "$CurentTrack"|sed 's/.\///g'| awk '{print "tmp/"$0}')
 echo $trackoutput trackoutput
-echo "$purple$year year Artist $Artist${white}"
-ffmpeg -i "$CurentTrack" -c copy -metadata year="$year" -metadata artist="$Artist" -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$tractNumber" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" "$trackoutput"
+echo "$purple$TrackTitle${white}"
+ffmpeg -i "$CurentTrack" -c copy -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$tractNumber" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" "$trackoutput"
 echo "$CurentTrack" -c copy -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$tractNumber" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" "$trackoutput"
 
 done
 FileDate=$(date +%Y_%m_%d_%Hh%Mm%Ss | tr "/" "_")
 #mkdir -p "$dir"/Processed/
-rm tmp/CueFiletmp
-rm tmp/Liste4Tag.csv
+#rm tmp/CueFiletmp
+#rm tmp/Liste4Tag.csv
 if [ -d "$parentdir"/_Processed/"$MachineNameFolder"_"$DiscNumber" ]
 then
 mv "$parentdir"/_Processed/"$MachineNameFolder"_"$DiscNumber" "$parentdir"/_TRASH_TMP/"$FileDate"_"$MachineNameFolder"_"$DiscNumber"
 fi
 
-mv tmp "$parentdir"/_Processed/"$MachineNameFolder"_"$DiscNumber"
+#mv tmp "$parentdir"/_Processed/"$MachineNameFolder"_"$DiscNumber"
 #FileDate=$(echo $(date +%%Y_%%m_%%d_%%Hh%%Mm%%Ss) | tr "/" "_")
 
 done
