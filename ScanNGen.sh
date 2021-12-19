@@ -1,5 +1,6 @@
 #!/bin/bash -e
 # wget -O A test/-tid?tid=4819094
+# sed 's/\&#8230;/…/g'
 orange=`tput setaf 11`
 bg_orange=`tput setab 178`
 purple=`tput setaf 13`
@@ -38,6 +39,13 @@ fi
 mkdir -p tmp ../_Trash_Temp
 for directory in "$parentdir"/_Source/*/
 do
+
+if [ -f tmp/info_support.csv ]
+then
+rm tmp/info_support.csv
+fi
+
+
 
 echo "$white################################################################################
 # WORKING IN $directory directory
@@ -117,18 +125,38 @@ cat tmp/temp_info.txt | awk '/Duration/' | awk -F',' '{print $1}' >> tmp/temp_in
 cat tmp/temp_info.txt | awk '/Stream/' | awk '!/ : Album cover/' >> tmp/temp_infotmp.txt
 mv tmp/temp_infotmp.txt tmp/temp_info.txt
 # Bash tmp for source
+echo "$thefilelist"
 thefilelist2export=$(echo "$thefilelist"| sed 's/"/\\"/g'| sed "s/'/\\'/g" )
 echo "thefilelist=\"$thefilelist2export\"" > tmp/tmp_Bash
 echo "${white}---> Creating file Fields                             : ${orange}./ffprobeFields.sh"
 
 ./ffprobeFields.sh
 
+echo $red DISCOGSID DISCOGSID DISCOGSID DISCOGSID $DISCOGSID "$Path2album"/_album_info/Album_ADDRESS.csv
+
+
+
 echo "${white}---> Rapatriment des variables from                   : ${orange}./ffprobeFields.sh"
 echo "${green}---> source nouvell variables in                      ${white}: ${orange}tmp/tmp_Bash"
 source tmp/tmp_Bash
+
+
+if [ -f "$Path2album"/_album_info/Album_ADDRESS.csv ]
+then
+AlbumADDRESS=$(cat "$Path2album"/_album_info/Album_ADDRESS.csv| awk  'NR == 2')
+DISCOGSID="${AlbumADDRESS##*/}"
+echo $red DISCOGSID DISCOGSID DISCOGSID DISCOGSID $DISCOGSID
+fi
+
+
+
 if [ "$DISCOGSID" == "" ]
 then
 echo "${orange}---> Discogs ID \$DISCOGSID is NULL at this point"
+elif [ "$DISCOGSID" == *"é"* ]
+then
+DISCOGSID=$(echo "$DISCOGSID"| awk  'NR == 2'|sed 's/è/e/g'|sed 's/à/a/g'|sed 's/ç/c/g')
+
 else
 echo "${green}---> Discogs ID \$DISCOGSID is                         ${white}: ${orange}$DISCOGSID"
 echo "DISCOGSID"=\"$DISCOGSID\" >> tmp/tmp_Bash
@@ -136,6 +164,7 @@ AdressReleaseDiscogs=$(echo "https://www.discogs.com/release/"$DISCOGSID)
 echo "${green}---> The release addres on discogs is                 ${white}: ${orange}$AdressReleaseDiscogs"
 echo "AdressReleaseDiscogs
 $AdressReleaseDiscogs" > ""$Path2album"/_album_info/Album_ADDRESS.csv"
+echo "AdressReleaseDiscogs=\"$AdressReleaseDiscogs\"">> tmp/tmp_Bash
 fi
 
 
@@ -176,12 +205,19 @@ ArtistID=$(cat ""$Path2album"/_album_info/_info_Artist/artistID.csv"| awk  'NR =
 AddressPageArtist=$(echo "https://www.discogs.com/artist/"$ArtistID)
 else
 curl -o tmp/SearchResultArtist -LO "https://www.discogs.com/fr/artist/"$searchArtistmachinename""
-cat tmp/SearchResultArtist | awk '/"@id": "https:\/\/www.discogs.com\/fr\/artist/' | awk -F'https' '{print "https"$2}'| awk -F'"' '{print $1}' |awk '{print $1}' |awk 'NR == 1' > tmp/_info_Artist/AddressArtist.txt
+cat tmp/SearchResultArtist | awk '/"@id": "https:\/\/www.discogs.com\/fr\/artist/' | awk -F'https' '{print "https"$2}'| awk -F'"' '{print $1}' |awk '{print $1}' |awk 'NR == 1' | sed 's/\\u00e9/e/g'| sed 's/\\u00e8/e/g' > tmp/_info_Artist/AddressArtist.txt
+cat tmp/SearchResultArtist | awk '/"@id": "https:\/\/www.discogs.com\/fr\/artist/' | awk -F'https' '{print "https"$2}'| awk -F'"' '{print $1}' |awk '{print $1}' |awk 'NR == 1'
 AddressPageArtist=$(cat tmp/_info_Artist/AddressArtist.txt)
-echo "$white---> Address Page Artist                                : ${orange}$AddressPageArtist"
+echo "$white---> Address Page Artist                              : ${orange}$AddressPageArtist"
 ArtistID=$(echo "$AddressPageArtist"| awk -F'/artist/' '{print $2}' )
 fi
+
 ArtistMachineName=${ArtistID#*-}
+if [ -f ""$Path2album"/_album_info/Various.csv" ]
+then
+ArtistMachineName="Various"
+fi
+
 Artist_TID=$(echo "$ArtistID"| awk -F'-' '{print $1}' )
 echo "$white---> Address Page Artist                              : ${orange}$AddressPageArtist"
 echo "$white---> Artist ID discogs.com                            : ${orange}$ArtistID"
@@ -197,7 +233,7 @@ mkdir -p ""$Path2album"/_img" ""$Path2album"/_album_info/_info_Artist"
 mkdir -p ../_Output/"$ArtistMachineName"/_info_Artist
 if [ -f ""$Path2album"/_album_info/_info_Artist/AddressPageArtist.csv" ]
 then
-echo "${white}---> Artist Address Found                             : ""$Path2album"/_album_info/_info_Artist/AddressPageArtist.csv""
+echo "${white}---> Artist Address Found                             : ${orange}""$Path2album"/_album_info/_info_Artist/AddressPageArtist.csv""
 else
 echo AddressPageArtist > ""$Path2album"/_album_info/_info_Artist/AddressPageArtist.csv"
 cat tmp/_info_Artist/AddressArtist.txt >> ""$Path2album"/_album_info/_info_Artist/AddressPageArtist.csv"
@@ -220,7 +256,6 @@ echo "${white}---> The Html page of the album whas found            : ${orange}"
 AlbumADDRESS=$(cat ""$Path2album"/_album_info/Album_ADDRESS.csv" | awk  'NR == 2')
 else
 
-
 if [ -f ""$Path2album"/_album_info/Album_ADDRESS.csv" ]
 then
 AlbumADDRESS=$(cat ""$Path2album"/_album_info/Album_ADDRESS.csv" | awk  'NR == 2')
@@ -231,18 +266,17 @@ echo "Album_TID" > tmp/Album_TID.csv
 echo "$tmpID" | awk -F'-' '{print $1}' >> tmp/Album_TID.csv
 cp tmp/Album_TID.csv ""$Path2album"/_album_info/Album_TID.csv"
 cp tmp/ALBUM_ID_DISCOGS.csv "$Path2album"/_album_info/ALBUM_ID_DISCOGS.csv
-ID_DISCOGS=$(cat "$Path2album"/_album_info/ALBUM_ID_DISCOGS.csv| awk  'NR == 2')
+ID_DISCOGS=$(cat "$Path2album"/_album_info/ALBUM_ID_DISCOGS.csv| awk  'NR == 2'|sed 's/è/e/g'|sed 's/à/a/g'|sed 's/ç/c/g')
 echo "DISCOGSID"=\"$DISCOGSID\" >>tmp/tmp_Bash
 Album_TID=$(cat "$Path2album"/_album_info/Album_TID.csv | awk  'NR == 2')
 OutputAlbumFolderTMP=${ID_DISCOGS#*-}
 OutputAlbumFolder=$(echo "$OutputAlbumFolderTMP"-"$Album_TID")
-echo "${white}---> Album address ${green}found !                      : ${orange}$AlbumADDRESS"
+echo "${white}---> Album address ${green}found !                            : ${orange}$AlbumADDRESS"
 curl -o ""$Path2album"/_album_info/ALBUM_Page.html" -LO "$AlbumADDRESS"
 else
 searchAddresAlbumArtist=$(echo "$searchAlbummachinename\&artist=$searchArtistmachinename"|tr -d '\')
 curl -o tmp/_info_Artist/Search_result_Discogs.html -LO $searchAddresAlbumArtist
 echo "${white}---> Searching searchAddresAlbumArtist                   : ${orange}$searchAddresAlbumArtist"
-
 echo "${white}---> Searching adress                                    : ${orange}$searchAlbummachinename\&artist=$searchArtistmachinename"
 cat tmp/_info_Artist/Search_result_Discogs.html| tr -d "\n" |awk -F'id="search_results"' '{print $2}' |awk -F'pagination bottom' '{print $1}' | sed 's/data-object-type="/\
 /g'| sed 's/_actions skittles/\
@@ -264,9 +298,7 @@ done < tmp/search_results_Albumtmp
 cat tmp/search_results_Album | sed '1d'| sed "s/&amp;/\&/g" | sed "s/&#39;/'/g" | sed 's/&#34;/"/g' > tmp/search_results_Albumtmp2
 awk NF tmp/search_results_Albumtmp2 > tmp/search_results_Album
 rm tmp/search_results_Albumtmp2 tmp/search_results_Albumtmp
-
 ./Menu_Select_Album.sh
-
 
 cat tmp/Album_ADDRESS.csv |awk NF > ""$Path2album"/_album_info/Album_ADDRESS.csv"
 AlbumADDRESS=$(cat ""$Path2album"/_album_info/Album_ADDRESS.csv" | awk  'NR == 2')
@@ -286,20 +318,23 @@ Album_TID=$(cat "$Path2album"/_album_info/Album_TID.csv| awk  'NR == 2')
 fi
 fi
 fi
-
 if [ -f ""$Path2album"/_album_info/ALBUM_ID_DISCOGS.csv" ]
 then
 Album_TID=$(cat ""$Path2album"/_album_info/Album_TID.csv"| awk  'NR == 2')
-ID_DISCOGS=$(cat ""$Path2album"/_album_info/ALBUM_ID_DISCOGS.csv"| awk  'NR == 2')
+ID_DISCOGS=$(cat ""$Path2album"/_album_info/ALBUM_ID_DISCOGS.csv"| awk  'NR == 2'|sed 's/é/e/g'|sed 's/è/e/g'|sed 's/à/a/g')
+
+
+echo $purple $DISCOGSID DISCOGSID
+
+
+
 echo "${white}---> Album Discogs ID                                 : ${orange}$ID_DISCOGS"
 echo "${white}---> Album TID                                        : ${orange}$Album_TID"
 echo "ID_DISCOGS"=\"$ID_DISCOGS\" >> tmp/tmp_Bash
 echo "DISCOGSID"=\"$ID_DISCOGS\" >> tmp/tmp_Bash
 fi
 images_gallery_address=$(echo ""$AlbumADDRESS"/images")
-
 OutputAlbumFolderTMP=${ID_DISCOGS#*-}
-
 OutputFoldrNameLength=$(echo "$OutputAlbumFolderTMP"-"$Album_TID" | awk '{print length}')
 if [ "$OutputFoldrNameLength" -ge 65 ]
 then
@@ -308,9 +343,17 @@ echo "${red}---> The OutputFoldrNameLength is $OutputFoldrNameLength chars long"
 elif [[ $OutputAlbumFolderTMP =~ ['!@#$%^&*()_+'] ]]
 then
 OutputAlbumFolder="$Album_TID"
-echo "${red}---> Percent in name %"
+echo "${red}---> Percent in name % in                               : ${green}$OutputAlbumFolder"
 else
-OutputAlbumFolder=$(echo "$OutputAlbumFolderTMP"-"$Album_TID" | sed 's/ü/u/g' | sed 's/Ü/U/g')
+
+OutputAlbumFolder=$(echo "$OutputAlbumFolderTMP"-"$Album_TID" | sed 's/\$/USD/g'|sed 's/û/u/g'|sed 's/ê/e/g'| iconv -f UTF-8 -t ascii//TRANSLIT//IGNORE|sed 's/"//g'|sed "s/\`//g")
+if [[ $OutputAlbumFolder == *"'"* ]]
+then
+OutputAlbumFolder="$Album_TID"
+echo "${red}---> Single quote ' in the folder name ${white}-> changed to  : ${green}$OutputAlbumFolder"
+
+fi
+
 fi
 mkdir -p ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/_img
 
@@ -337,7 +380,6 @@ cat tmp/image_gallery | tr -d "\n" |awk -F'id="view_images"' '{print $2}' | sed 
 mkdir -p tmp/img
 mkdir -p "$Path2album"/_img
 count=00
-
 while read imagegalleryline
 do
 count=$(( count+1 ))
@@ -380,10 +422,14 @@ fi
 
 echo "${white}---> ISRC                                             :${orange} $ISRC"
 
-GenreToFile=$(echo "$Genre"| sed 's/@/, /g')
 ArtistsAlbum2file=$(echo $ALBUMARTIST| sed 's/@/, /g')
-
-UUID=$(echo "$ID_DISCOGS"-"$DiscNumber"-"$tractNumber")
+#
+UUID=$(echo "$ID_DISCOGS"-"$DiscNumber"-"$traxNumber"|sed 's/û/u/g'|sed 's/ê/e/g'| iconv -f UTF-8 -t ascii//TRANSLIT//IGNORE|sed 's/"//g'|sed "s/\`//g")
+if [[ $UUID =~ ['!@#$%^&*()_+'] ]]
+then
+UUID=$(echo "$Album_TID"-"$DiscNumber"-"$traxNumber")
+echo "${red}---> Percent in name % in   UUID     -> NEW UUID        : OutputAlbumFolder"
+fi
 
 ./Album_Information.sh
 
@@ -414,15 +460,17 @@ echo "${white}---> Rsync                                            : ${orange}D
 echo "${white}---> \$FrontCoverImage found                           : ${orange}$FrontCoverImage${white}"
 
 # Get More info from discogs html page
-./Credits.sh
+#./Credits.sh
+./CreditsTrack_By_track.sh
 source tmp/tmp_Bash
+
 FileSize=$(ls -lah "$thefilelist" | awk '{print $5}'|sed 's/M/ Mo/g'|sed 's/B/ Bytes/g'|sed 's/G/ Go/g')
 
 FilenoextTMP="${thefilelist##*/}"
 # fileNoExt
-fileNoExt=$(echo "$FilenoextTMP" |sed "s/.$extension//g"| sed 's/\$/USD/g')
+fileNoExt=$(echo "$FilenoextTMP" |sed "s/.$extension//g"| sed 's/\$/USD/g'|sed 's/û/u/g'|sed 's/ê/e/g'| iconv -f UTF-8 -t ascii//TRANSLIT//IGNORE|sed 's/"//g'|sed "s/\`//g")
 # FileOutNoExt
-FileOutNoExt=$(echo "$tractNumber"_"$TrackTitle"| sed 'y/üçÇôöîïêëāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜĀÁǍÀĒÉĚÈËĪÍǏÌŌÓǑÒŪÚǓÙǕÜ/ucCooiieeaaaaeeeeiiiioooouuuuuuuuAAAAEEEEEIIIIOOOOUUUUUU/' | sed 's/œ/oe/g'| sed 's/æ/ae/g'|tr ' ' '_'|sed 's/_\[/-/g'|tr -d '[]()/' |tr ' ' '_'| sed 's/^0*//'| sed 's/\$/USD/g')
+FileOutNoExt=$(echo "$traxNumber"_"$TrackTitle"| sed 's/\$/USD/g'|sed 's/û/u/g'|sed 's/ê/e/g'| iconv -f UTF-8 -t ascii//TRANSLIT//IGNORE|sed 's/"//g'|sed "s/\`//g" | sed 's/\//_/g')
 
 releaseDateinfo=$(cat "$Path2album"/_album_info/CSVs/ReleaseDate.csv| awk  'NR == 2')
 if [ "$releaseDateinfo" == "" ]
@@ -445,6 +493,9 @@ else
 Date=$(cat "$Path2album"/_album_info/CSVs/ReleaseDate.csv| awk  'NR == 2')
 fi
 
+Genre=$(cat "$Path2album"/_album_info/CSVs/Styles.csv|awk '(NR>1)' |awk -F'|' '{print $1}'|tr '\n' '@'|sed 's/.$//')
+
+GenreToFile=$(echo "$Genre"| sed 's/@/, /g')
 
 
 if [ -f "$FrontCoverImage" ]
@@ -452,16 +503,16 @@ then
 if [ "$extension" == m4a ]
 then
 echo "${white}---> m4a Audio rule with image"
-ffmpeg -i "$thefilelist" -i "$FrontCoverImage" -map 0:a -map 1 -codec copy -metadata:s:v title="Album cover" -disposition:v attached_pic -codec:v copy -codec:a libmp3lame -q:a 2 -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$tractNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" -metadata compilation="$compilation" ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".mp3
+ffmpeg -i "$thefilelist" -i "$FrontCoverImage" -map 0:a -map 1 -codec copy -metadata:s:v title="Album cover" -disposition:v attached_pic -codec:v copy -codec:a libmp3lame -q:a 2 -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$traxNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" -metadata compilation="$compilation"  -write_xing 0 ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".mp3
 echo ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".mp3 > tmp/SOUNDFILE_BASE.txt
 elif [ "$extension" == ogg ]
 then
 echo "${white}---> OGG VOBIS Audio rule"
-ffmpeg -i "$thefilelist" -i "$FrontCoverImage" -map 0:a -map 1 -codec copy -metadata:s:v title="Album cover" -disposition:v attached_pic -codec:v copy -codec:a libmp3lame -q:a 2 -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$tractNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" -metadata compilation="$compilation" ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".mp3
+ffmpeg -i "$thefilelist" -i "$FrontCoverImage" -map 0:a -map 1 -codec copy -metadata:s:v title="Album cover" -disposition:v attached_pic -codec:v copy -codec:a libmp3lame -q:a 2 -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$traxNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" -metadata compilation="$compilation"  -write_xing 0 ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".mp3
 echo ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".mp3 > tmp/SOUNDFILE_BASE.txt
 else
 echo "${white}---> Encoding default with front cover"
-ffmpeg -i "$thefilelist" -i "$FrontCoverImage" -map 0:a -map 1 -codec copy -metadata:s:v title="Album cover" -disposition:v attached_pic  -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$tractNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" -metadata compilation="$compilation" ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt"."$extension"
+ffmpeg -i "$thefilelist" -i "$FrontCoverImage" -map 0:a -map 1 -codec copy -metadata:s:v title="Album cover" -disposition:v attached_pic  -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$traxNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" -metadata compilation="$compilation"  -write_xing 0 ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt"."$extension"
 echo ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt"."$extension" > tmp/SOUNDFILE_BASE.txt
 fi
 
@@ -470,16 +521,16 @@ else
 if [ "$extension" == m4a ]
 then
 echo "${white}---> m4a Audio rule"
-ffmpeg -i "$thefilelist" -codec:v copy -codec:a libmp3lame -q:a 2 -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$tractNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".mp3
+ffmpeg -i "$thefilelist" -codec:v copy -codec:a libmp3lame -q:a 2 -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$traxNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".mp3  -write_xing 0
 echo ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".mp3 > tmp/SOUNDFILE_BASE.txt
 elif [ "$extension" == ogg ]
 then
 echo "${white}---> OGG VOBIS Audio rule ps d'image"
-ffmpeg -i "$thefilelist" -codec:v copy -codec:a libmp3lame -q:a 2 -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$tractNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".mp3
+ffmpeg -i "$thefilelist" -codec:v copy -codec:a libmp3lame -q:a 2 -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$traxNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".mp3  -write_xing 0
 echo ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".mp3 > tmp/SOUNDFILE_BASE.txt
 else
 echo "${white}---> pas d'image ffmpeg -c copy"
-ffmpeg -i "$thefilelist" -c copy -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$tractNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt"."$extension"
+ffmpeg -i "$thefilelist" -c copy -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$traxNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt"."$extension"  -write_xing 0
 echo ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt"."$extension" > tmp/SOUNDFILE_BASE.txt
 fi
 fi
@@ -493,6 +544,7 @@ convert "$FrontCoverImage" -gravity center -background transparent -resize 512x5
 ./icon.sh tmp.png ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"
 ./icon.sh tmp.png "$Path2album"
 
+echo "$purple BBB ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/_album_info/"$DiscNumber"_"$traxNumber"_NodeAudio.csv"
 
 # PROCESSING CSVs
 IFS=$'\n'       # Processing direcoty
@@ -501,7 +553,15 @@ for TheFileImagesTMP in $(cat tmp/imglist4couv.txt)
 do
 TheFileImages="${TheFileImagesTMP##*/}"
 ImageNumber=$(echo "$TheFileImages"|awk -F'_' '{print $2}'|awk -F'.' '{print $1}')
+
 TheFileID_fid=$(echo $Album_TID"-"$ImageNumber)
+
+if [[ $TheFileID_fid =~ ['!@#$%^&*()_+'] ]]
+then
+TheFileID_fid=$(echo "$Album_TID"-"$DiscNumber"-"$traxNumber")
+echo "${red}---> Percent in name % in   TheFileID_fid -> NEW TheFileID_fid : OutputAlbumFolder"
+fi
+
 ImageURI=$(echo "$TheFileImagesTMP"|sed 's/..\/_Output/private:\/\/Music\//g'|sed "s/'/\\\'/g"|sed 's/\/\//\//g')
 echo "${green}image found : ${white}$ImageURI"
 
@@ -509,18 +569,24 @@ echo "${green}image found : ${white}$ImageURI"
 echo "$TheFileID_fid|$TheFileImages|$ImageURI" >> ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/_img/imagesfiletmp.csv
 done
 
-echo "${white}---> Adress du fichier son pour l'import PHP via :${orange} use Drupal\file\Entity\File;"
+echo "${white}---> Adresse du fichier son pour l'import PHP via :${orange} use Drupal\file\Entity\File;"
 echo "${white}---> ID (fid) = 1 + Album_TID"
 
 BaseSoundFile=$(cat tmp/SOUNDFILE_BASE.txt)
 TheFileSound="${BaseSoundFile##*/}"
 #echo "${white}$TheFileSound"
-TheFileSoundID_fid=$(echo "$ID_DISCOGS"-"$DiscNumber"-"$tractNumber" | sed 's/%C3%A9/e/g'| sed 's/é/e/g')
+TheFileSoundID_fid=$(echo "$ID_DISCOGS"-"$DiscNumber"-"$traxNumber" |sed 's/û/u/g'|sed 's/ê/e/g'| iconv -f UTF-8 -t ascii//TRANSLIT//IGNORE|sed 's/"//g'|sed "s/\`//g")
+if [[ $TheFileSoundID_fid =~ ['!@#$%^&*()_+'] ]]
+then
+TheFileSoundID_fid=$(echo "$Album_TID"-"$DiscNumber"-"$traxNumber")
+echo "${red}---> Percent in name % in TheFileSoundID_fid -> NEW TheFileSoundID_fid : OutputAlbumFolder"
+fi
+
 SoundURI=$(echo "$BaseSoundFile"|sed 's/..\/_Output/private:\/\/Music\//g'|sed "s/'/\\\'/g"|sed 's/\/\//\//g')
 
 # CSV SOUND FILE
 echo "TheFileSoundID_fid|TheFileSound|SoundURI
-"$TheFileSoundID_fid"|"$TheFileSound"|"$SoundURI"" > ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/_album_info/"$DiscNumber"_"$tractNumber"_Soundfile.csv
+"$TheFileSoundID_fid"|"$TheFileSound"|"$SoundURI"" > ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/_album_info/"$DiscNumber"_"$traxNumber"_Soundfile.csv
 
 # CSV IMAGES FILES
 echo "TheFileID_fid|TheFileImages|ImageURI" > ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/_img/imagesfile.csv
@@ -532,12 +598,38 @@ CoverFID=$(echo $ImagesFID| awk -F'@' '{print $1}')
 
 # CSV Taxonomy Album
 AlbumURL=$(echo "$AlbumADDRESS"| sed 's/https:\/\/www.discogs.com//g')
-TrackURL=$(echo "$AlbumURL"/"$DiscNumber"/"$tractNumber"/)
+TrackURL=$(echo "$AlbumURL"/"$DiscNumber"/"$traxNumber"/)
 echo "Album_TID|Album_Title|Album_Image|Body|ImagesFID
 $Album_TID|$Album_Title|$Album_Image||$ImagesFID" > Taxonomy_AlbumTMP
 # CSV Node Track Audio
 echo "${white}---> NODE ID = Album_TID + Disc N# + track N#"
-NodeID=$(echo "$Album_TID$DiscNumber$tractNumber")
+NodeIDTMP=$(echo "$Album_TID$DiscNumber$traxNumber")
+NodIDLength=$(echo "$NodeIDTMP"|awk '{print length}')
+
+
+
+if [ "$NodIDLength" -ge 10 ]
+then
+echo "${red}---> Node ID ${orange}NodeID${red} lenght is more than 9 digits"
+if [ -f ../_Output/temp_ID.txt ]
+then
+echo "${green}---> Temp Node ID found in                            :${orange} ../_Output/temp_ID.txt"
+else
+wget -O  tmp/tempID https://music.sous-paris.com/used-nid
+cat tmp/tempID |awk '!/</'|awk '!/>/'|awk '!/\*/'|awk '!/x/'|awk NF|sed '1d' > ../_Output/temp_ID.txt
+fi
+cat ../_Output/temp_ID.txt |sort -r | head -n1 | awk '{print $1+1}' > tmp/NODEID_FROMLIST
+
+NodeID=$(cat tmp/NODEID_FROMLIST)
+echo "$NodeID" > tmp/NODEID_FROMLIST
+echo "$NodeID" >> ../_Output/temp_ID.txt
+echo "${green}---> temp Node ID genrated_from_list                  :${green} $NodeID"
+else
+NodeID=$(echo "$Album_TID$DiscNumber$traxNumber")
+echo "${white}---> Deffault node id                                 :${green} $NodeID"
+fi
+
+
 TrackInfoArtist=$(cat tmp/Trackinfo.csv| awk  'NR == 2')
 CreditAlbum=$(cat "$Path2album"/_album_info/jobe_Album.csv| awk  'NR == 2')
 cat tmp/Trackinfo.csv
@@ -551,14 +643,52 @@ then
 echo "${red}---> There is even no Date"
 else
 YEAR=$(echo "$Date"|awk -F'-' '{print $1}')
-echo "${green}---> Year from variable \$Date                         :$YEAR"
+echo "${green}---> Year from variable \$Date                         : ${orange}$YEAR"
 fi
 fi
 
+if [ -f "$Path2album"/_album_info/CSVs/YearMaster.csv ]
+then
+YearMaster=$(cat "$Path2album"/_album_info/CSVs/YearMaster.csv| awk  'NR == 2')
+fi
 
-echo "DiscNumber|tractNumber|Artist|Album_Title|CoverFID|TrackTitle|ALBUMARTIST|DISCTOTAL|TRACKTOTAL|Duration|Audio|LABEL|YEAR|Date|fileNoExt|Path2album|extension|FileSize|Genre|AlbumADDRESS|Album_TID|TheFileSoundID_fid|ID_DISCOGS|ImagesFID|NodeID|UUID|Artist_TID|Album_TID|AlbumURL|extension|TrackURL|FileOutNoExt|ISRC|compilation|compilationUUID|1_pers|1_info|2_pers|2_info|3_pers|3_info|4_pers|4_info|5_pers|5_info|6_pers|6_info|7_pers|7_info|8_pers|8_info|9_pers|9_info|10_pers|10_info|Job_10|ArtistTID_10|Job_9|ArtistTID_9|Job_8|ArtistTID_8|Job_7|ArtistTID_7|Job_6|ArtistTID_6|Job_5|ArtistTID_5|Job_4|ArtistTID_4|Job_3|ArtistTID_3|Job_2|ArtistTID_2|Job_1|ArtistTID_1|releasenoteslines|BarCode|MainArtistAddress
-$DiscNumber|$tractNumber|$Artist|$Album_Title|$CoverFID|$TrackTitle|$ALBUMARTIST|$DISCTOTAL|$TRACKTOTAL|$Duration|$Audio|$LABEL|$YEAR|$Date|$fileNoExt|$Path2album|$extension|$FileSize|$Genre|$AlbumADDRESS|$Album_TID|$TheFileSoundID_fid|$ID_DISCOGS|$ImagesFID|$NodeID|$UUID|$Artist_TID|$Album_TID|$AlbumURL|$extension|$TrackURL|$FileOutNoExt|$ISRC|$compilation|$compilationUUID|$TrackInfoArtist|$CreditAlbum|$ReleaseNote|$BarCode|$MainArtistAddress" > ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/_album_info/"$DiscNumber"_"$tractNumber"_NodeAudio.csv
 
+# Label
+if [ -f "$Path2album"/_album_info/CSVs/Labels.csv ]
+then
+echo "${green}---> Label found"
+labellist=$(cat "$Path2album"/_album_info/CSVs/Labels.csv |awk '(NR>1)')
+cat "$Path2album"/_album_info/CSVs/Labels.csv
+
+Label1=$(cat "$Path2album"/_album_info/CSVs/Labels.csv | awk  'NR == 2'|awk -F'|' '{print $3}')
+LabeCatalogNumber1=$(cat "$Path2album"/_album_info/CSVs/Labels.csv | awk  'NR == 2'|awk -F'|' '{print $4}')
+
+Label2=$(cat "$Path2album"/_album_info/CSVs/Labels.csv | awk  'NR == 3'|awk -F'|' '{print $3}')
+LabeCatalogNumber2=$(cat "$Path2album"/_album_info/CSVs/Labels.csv | awk  'NR == 3'|awk -F'|' '{print $4}')
+
+Label3=$(cat "$Path2album"/_album_info/CSVs/Labels.csv | awk  'NR == 4'|awk -F'|' '{print $3}')
+LabeCatalogNumber3=$(cat "$Path2album"/_album_info/CSVs/Labels.csv | awk  'NR == 4'|awk -F'|' '{print $4}')
+echo Label3 $Label3 $LabeCatalogNumber3 LabeCatalogNumber3 Label2 $Label2 $Label1 Label1 $LabeCatalogNumber1 LabeCatalogNumber1
+
+fi
+
+
+
+
+echo "Support_Type|ReleaseType
+$support|$TypeRelease" > tmp/info_support.csv
+cp tmp/info_support.csv "$Path2album"/_album_info/CSVs/info_support.csv
+
+echo "SupportTypeRelease=\$(cat \"\$Path2album\"/_album_info/CSVs/info_support.csv| awk  'NR == 2')" >> tmp/tmp_Bash2
+
+
+
+
+
+
+echo "DiscNumber|traxNumber|Artist|Album_Title|CoverFID|TrackTitle|ALBUMARTIST|DISCTOTAL|TRACKTOTAL|Duration|Audio|Label1|LabeCatalogNumber1|Label2|LabeCatalogNumber2|Label3|LabeCatalogNumber3|YEAR|Date|fileNoExt|Path2album|extension|FileSize|Genre|AlbumADDRESS|Album_TID|TheFileSoundID_fid|ID_DISCOGS|ImagesFID|NodeID|UUID|Artist_TID|Album_TID|AlbumURL|extension|TrackURL|FileOutNoExt|ISRC|compilation|compilationUUID|1_pers|1_info|2_pers|2_info|3_pers|3_info|4_pers|4_info|5_pers|5_info|6_pers|6_info|7_pers|7_info|8_pers|8_info|9_pers|9_info|10_pers|10_info|Job_10|ArtistTID_10|Job_9|ArtistTID_9|Job_8|ArtistTID_8|Job_7|ArtistTID_7|Job_6|ArtistTID_6|Job_5|ArtistTID_5|Job_4|ArtistTID_4|Job_3|ArtistTID_3|Job_2|ArtistTID_2|Job_1|ArtistTID_1|releasenoteslines|BarCode|MainArtistAddress|YearMaster|Support_Type|ReleaseType
+$DiscNumber|$traxNumber|$Artist|$Album_Title|$CoverFID|$TrackTitle|$ALBUMARTIST|$DISCTOTAL|$TRACKTOTAL|$Duration|$Audio|$Label1|$LabeCatalogNumber1|$Label2|$LabeCatalogNumber2|$Label3|$LabeCatalogNumber3|$YEAR|$Date|$fileNoExt|$Path2album|$extension|$FileSize|$Genre|$AlbumADDRESS|$Album_TID|$TheFileSoundID_fid|$ID_DISCOGS|$ImagesFID|$NodeID|$UUID|$Artist_TID|$Album_TID|$AlbumURL|$extension|$TrackURL|$FileOutNoExt|$ISRC|$compilation|$compilationUUID|$TrackInfoArtist|$CreditAlbum|$ReleaseNote|$BarCode|$MainArtistAddress|$YearMaster|$SupportTypeRelease" > ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/_album_info/"$DiscNumber"_"$traxNumber"_NodeAudio.csv
+echo "$purple../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/_album_info/"$DiscNumber"_"$traxNumber"_NodeAudio.csv"
 done
 
 if [ -f tmp/IMAGES_FILE_IMPORT_PHP ]
@@ -577,12 +707,32 @@ for audiolines in $(cat tmp/all_node_Audio_list.csv)
 do
 cat "$audiolines" | awk  'NR == 2' >> tmp/all_node_Audiotmp
 done
-echo "DiscNumber|tractNumber|Artist|Album_Title|CoverFID|TrackTitle|ALBUMARTIST|DISCTOTAL|TRACKTOTAL|Duration|Audio|LABEL|YEAR|Date|fileNoExt|Path2album|extension|FileSize|Genre|AlbumADDRESS|Album_TID|TheFileSoundID_fid|ID_DISCOGS|ImagesFID|NodeID|UUID|Artist_TID|Album_TID|AlbumURL|extension|TrackURL|FileOutNoExt|ISRC|compilation|compilationUUID|1_pers|1_info|2_pers|2_info|3_pers|3_info|4_pers|4_info|5_pers|5_info|6_pers|6_info|7_pers|7_info|8_pers|8_info|9_pers|9_info|10_pers|10_info|Job_10|ArtistTID_10|Job_9|ArtistTID_9|Job_8|ArtistTID_8|Job_7|ArtistTID_7|Job_6|ArtistTID_6|Job_5|ArtistTID_5|Job_4|ArtistTID_4|Job_3|ArtistTID_3|Job_2|ArtistTID_2|Job_1|ArtistTID_1|releasenoteslines|BarCode|MainArtistAddress" > ../_Output/_AUDIO_IMPORT.csv
+echo "DiscNumber|traxNumber|Artist|Album_Title|CoverFID|TrackTitle|ALBUMARTIST|DISCTOTAL|TRACKTOTAL|Duration|Audio|Label1|LabeCatalogNumber1|Label2|LabeCatalogNumber2|Label3|LabeCatalogNumber3|YEAR|Date|fileNoExt|Path2album|extension|FileSize|Genre|AlbumADDRESS|Album_TID|TheFileSoundID_fid|ID_DISCOGS|ImagesFID|NodeID|UUID|Artist_TID|Album_TID|AlbumURL|extension|TrackURL|FileOutNoExt|ISRC|compilation|compilationUUID|1_pers|1_info|2_pers|2_info|3_pers|3_info|4_pers|4_info|5_pers|5_info|6_pers|6_info|7_pers|7_info|8_pers|8_info|9_pers|9_info|10_pers|10_info|Job_10|ArtistTID_10|Job_9|ArtistTID_9|Job_8|ArtistTID_8|Job_7|ArtistTID_7|Job_6|ArtistTID_6|Job_5|ArtistTID_5|Job_4|ArtistTID_4|Job_3|ArtistTID_3|Job_2|ArtistTID_2|Job_1|ArtistTID_1|releasenoteslines|BarCode|MainArtistAddress|YearMaster|Support_Type|ReleaseType" > ../_Output/_AUDIO_IMPORT.csv
 cat tmp/all_node_Audiotmp >> ../_Output/_AUDIO_IMPORT.csv
 rm tmp/all_node_Audiotmp tmp/all_node_Audio_list.csv
 
+
+
+# ASSEMBLE FOR THE ALBUM
+find ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder" -name *_NodeAudio.csv | sed 's/\/\//\//g' > tmp/single_node_Audio_list.csv
+for single_node_Audio_list in $(cat tmp/single_node_Audio_list.csv)
+do
+cat "$single_node_Audio_list" | awk  'NR == 2' >> tmp/single_node_Audio_listTMP
+done
+echo "DiscNumber|traxNumber|Artist|Album_Title|CoverFID|TrackTitle|ALBUMARTIST|DISCTOTAL|TRACKTOTAL|Duration|Audio|Label1|LabeCatalogNumber1|Label2|LabeCatalogNumber2|Label3|LabeCatalogNumber3|YEAR|Date|fileNoExt|Path2album|extension|FileSize|Genre|AlbumADDRESS|Album_TID|TheFileSoundID_fid|ID_DISCOGS|ImagesFID|NodeID|UUID|Artist_TID|Album_TID|AlbumURL|extension|TrackURL|FileOutNoExt|ISRC|compilation|compilationUUID|1_pers|1_info|2_pers|2_info|3_pers|3_info|4_pers|4_info|5_pers|5_info|6_pers|6_info|7_pers|7_info|8_pers|8_info|9_pers|9_info|10_pers|10_info|Job_10|ArtistTID_10|Job_9|ArtistTID_9|Job_8|ArtistTID_8|Job_7|ArtistTID_7|Job_6|ArtistTID_6|Job_5|ArtistTID_5|Job_4|ArtistTID_4|Job_3|ArtistTID_3|Job_2|ArtistTID_2|Job_1|ArtistTID_1|releasenoteslines|BarCode|MainArtistAddress|YearMaster|Support_Type|ReleaseType" > ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/_Album_AUDIO_IMPORT.csv
+cat tmp/single_node_Audio_listTMP >> ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/_Album_AUDIO_IMPORT.csv
+rm tmp/single_node_Audio_listTMP
+
+
+
+
 # ASSEMBLE AUDIO PHP
-find ../_Output/ -name *_Soundfile.csv | sed 's/\/\//\//g' > tmp/all_sound_file_PHP_list.csv
+echo $red cat source
+cat tmp/tmp_Bash
+echo "$purple AAA ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/_album_info/"$DiscNumber"_"$traxNumber"_NodeAudio.csv
+../_Output/"$ArtistMachineName"/"$OutputAlbumFolder""
+
+find ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder" -name *_Soundfile.csv | sed 's/\/\//\//g' > tmp/all_sound_file_PHP_list.csv
 
 for soundinformation in $(cat tmp/all_sound_file_PHP_list.csv)
 do
@@ -591,11 +741,12 @@ filenamelinesound=$(cat "$soundinformation" | awk  'NR == 2'|awk -F'|' '{print $
 urilinesound=$(cat "$soundinformation" | awk  'NR == 2'|awk -F'|' '{print $3}'|sed "s/'/\\'/g"|sed 's/private:\//private:\/\//g')
 echo "\$file = File::create(['uid' => 1,'uuid' => '"$fidlinesound"', 'filename' => '"$filenamelinesound"', 'uri' => '"$urilinesound"', 'status' => 1,]);\$file->save();" >> tmp/tmp_AUDIOFILE_IMPORT_PHP
 done
-echo "use Drupal\file\Entity\File;" > ../_Output/_AUDIOFILE_IMPORT.txt
-cat tmp/tmp_AUDIOFILE_IMPORT_PHP >> ../_Output/_AUDIOFILE_IMPORT.txt
+echo "use Drupal\file\Entity\File;" > ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/_Audio_import_PHP.txt
+cat tmp/tmp_AUDIOFILE_IMPORT_PHP >> ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/_Audio_import_PHP.txt
+
 
 # ASSEMBLE IMAGES PHP
-find ../_Output/ -name imagesfile.csv | sed 's/\/\//\//g' > tmp/all_image_files_PHP_list.csv
+find ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/ -name imagesfile.csv | sed 's/\/\//\//g' > tmp/all_image_files_PHP_list.csv
 for imageinfomation in $(cat tmp/all_image_files_PHP_list.csv)
 do
 cat "$imageinfomation"| sed '1d' | while read lineimages
@@ -606,8 +757,31 @@ urilineimage=$(echo "$lineimages" |awk -F'|' '{print $3}'|sed 's/private:\//priv
 echo "\$file = File::create(['uid' => 1,'uuid' => '"$fidlineimage"', 'filename' => '"$filenamelineimage"', 'uri' => '"$urilineimage"', 'status' => 1,]);\$file->save();" >> tmp/IMAGES_FILE_IMPORT_PHP
 done
 done
-echo "use Drupal\file\Entity\File;" > ../_Output/_IMAGES_FILE_IMPORT.txt
-cat tmp/IMAGES_FILE_IMPORT_PHP >> ../_Output/_IMAGES_FILE_IMPORT.txt
+
+
+
+echo "use Drupal\file\Entity\File;" > ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/_IMAGES_import_PHP.txt
+cat tmp/IMAGES_FILE_IMPORT_PHP >> ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/_IMAGES_import_PHP.txt
+
+echo "use Drupal\file\Entity\File;" > ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/__IMPORT_ALL_PHP.txt
+cat ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/_Audio_import_PHP.txt | sed '1d' >> ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/__IMPORT_ALL_PHP.txt
+cat ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/_IMAGES_import_PHP.txt | sed '1d' >> ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/__IMPORT_ALL_PHP.txt
+
+#cat tmp/IMAGES_FILE_IMPORT_PHP >> ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/__IMPORT_ALL_PHP.txt
+
+if [ -f ../_Output/_ALL_PHP_IMPORT.txt ]
+then
+cat ../_Output/_ALL_PHP_IMPORT.txt | sed '1d' >> tmp/import_all_phpTMP
+
+else
+touch tmp/import_all_phpTMP
+fi
+
+cat ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/__IMPORT_ALL_PHP.txt | sed '1d' > tmp/_ALL_TMP_PHP
+cat tmp/import_all_phpTMP >> tmp/_ALL_TMP_PHP
+
+echo "use Drupal\file\Entity\File;" > ../_Output/_ALL_PHP_IMPORT.txt
+cat tmp/_ALL_TMP_PHP |awk '!seen[$0]++' >> ../_Output/_ALL_PHP_IMPORT.txt
 
 #### Compilation ALBUM INFOS + image
 
@@ -646,41 +820,6 @@ then
 rm temp.csv
 fi
 
-
-
-
-
-#awk -F'|' '{print $(NF-1)"|"$NF}'  ../_Output/_AUDIO_IMPORT.csv  | awk -v "Album_TID"="$Album_TID" "/$Album_TID/"  > ../_Output/_compil_IMPORTtmp.csv
-
-#rm ../_Output/_compil_IMPORTtmp.csv
-# ASSEMBLE ALBUM TAXONOMY
-
-
-#if [ -f "$path2id" ]
-#then
-#echo "$white---> File ID                    : ${green}Found !${white} $path2id"
-#ArtistID=$(cat "$path2id" | awk  'NR == 2' )
-#
-#
-#else
-#echo "$white---> File ID                    : ${orange}Not Found !"
-#echo "$white---> Searching artist           : ${orange}$artist ${white}discogs.com"
-
-
-
-# Album = "Album_TID|Album_Title|Album_Image"
-
-# Schema PHP
-#use Drupal\file\Entity\File;
-#$file = File::create(['uid' => 1,'fid' => '40000', 'filename' => '04 The Question Of U.mp3', 'uri' => 'private://Music/Prince/Graffiti Bridge/04 The Question Of U.mp3', 'status' => 1,]);$file->save();
-
-
-#use Drupal\file\Entity\File;
-#$file = File::create(['uid' => 1,'fid' => '1546476612','uuid' => 'abc-123-144-123', 'filename' => '1-07 Slow Love.mp3', 'uri' => 'private://Music/Prince/Prince-Sign-O-The-Times-5464766/1-07 Slow Love.mp3', 'status' => 1,]);$file->save();
-#echo "Artist-address|ArtistID|Artist_TID|Artist" > ../_Output/_ARTIST.CSV
-#cat ../_Output/tmp_ARTIST.CSV |awk '!seen[$0]++' >> ../_Output/_ARTIST.CSV
-#rm ../_Output/tmp_ARTIST.CSV
-
 # Compile Artist
 find ../_Output/ tmp -name credits_Artiss_list.csv -o -name artist_list_tracks.csv |sed 's/\/\//\//g' > tmp/artist2compile.list
 #find "$directory" -name "*.flac" -o -name "*.mp3" -o -name "*.m4a" -o -name "*.ogg" -o -name "*.aif"
@@ -718,12 +857,45 @@ cat tmp/artist_list.csvTMP >> tmp/_ARTIST.CSV
 cat tmp/artist_credit_list.csv |awk '!seen[$0]++' |awk NF | sed 's/ \//\//g' >> tmp/_ARTIST.CSV
 echo "Artist-address|ArtistID|Artist_TID|Artist" > ../_Output/_ARTIST.CSV
 cat  tmp/_ARTIST.CSV |sed '1d' |awk '!seen[$0]++' |awk NF >> ../_Output/_ARTIST.CSV
+
+# LAbels List CSV
+if [ -f ../_Output/_LABELS_LIST.CSV ]
+then
+cat ../_Output/_LABELS_LIST.CSV|awk '(NR>1)' > tmp/LABELS.TMP
+fi
+
+
+echo "LabeID|LabeName|LabeTID|LabeCatalogNumber|LabeURL"  |awk NF > ../_Output/_LABELS_LIST.CSV
+if [ -f tmp/LABELS.TMP ]
+then
+cat tmp/LABELS.TMP |awk NF |awk '!seen[$0]++' >> ../_Output/_LABELS_LIST.CSV
+fi
+cat "$Path2album"/_album_info/CSVs/Labels.csv|awk '(NR>1)' |awk NF >> ../_Output/_LABELS_LIST.CSV
+
+
+
 echo "$red---> Export Album info Artist + Album + PHP"
-mv "$directory" ../_Trash_Temp/00_"$Album_Title"
+
+FileDate=$(echo $(date +%Y_%m_%d_%Hh%Mm%Ss) | tr "/" "_")
+TrashDirectory=$(echo "$Album_Title"| tr -d '/:')
+mv "$directory" ../_Trash_Temp/"$TrashDirectory"_"$FileDate"
+
+
+
+
+
+if [ -f tmp/default_choice ]
+then
+rm tmp/default_choice
+fi
 done
 
-cd -
 
+if [ -f ../_Output/temp_ID.txt ]
+then
+rm ../_Output/temp_ID.txt
+fi
+cd -
 
 
 

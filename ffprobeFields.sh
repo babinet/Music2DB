@@ -68,11 +68,11 @@ Artist=$(cat tmp/current_artist.csv | awk  'NR == 2')
 # Album Title
 if [ -f tmp/ALBUM.csv ]
 then
-cat tmp/ALBUM.csv | sed 's/ALBUM/Album_title/g'| sed 's/album/Album_title/g' |sed 's/"/\\"/g' > tmp/_album_info/Album_Title.csv
+cat tmp/ALBUM.csv | sed 's/ALBUM/Album_title/g'| sed 's/album/Album_title/g' > tmp/_album_info/Album_Title.csv
 fi
 if [ -f tmp/album.csv ]
 then
-cat tmp/album.csv | sed 's/ALBUM/Album_title/g'| sed 's/album/Album_title/g'|sed 's/"/\\"/g' > tmp/_album_info/Album_Title.csv
+cat tmp/album.csv | sed 's/ALBUM/Album_title/g'| sed 's/album/Album_title/g' > tmp/_album_info/Album_Title.csv
 fi
 Album_Title=$(cat tmp/_album_info/Album_Title.csv | awk  'NR == 2')
 
@@ -109,21 +109,21 @@ if [ -f tmp/TRACK.csv ]
 then
 cat tmp/TRACK.csv | awk -F'/' '{print $1}' | sed 's/track/Track/g' | sed 's/TRACK/Track/g' > tmp/_album_info/tracktmp.csv
 mv tmp/_album_info/tracktmp.csv tmp/_album_info/current_track.csv
-tractNumberTMP=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2'| sed 's/^0*//')
+traxNumberTMP=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2'| sed 's/^0*//')
 fi
 if [ -f tmp/track.csv ]
 then
 cat tmp/track.csv | awk -F'/' '{print $1}' | sed 's/track/Track/g' | sed 's/TRACK/Track/g' > tmp/_album_info/tracktmp.csv
 mv tmp/_album_info/tracktmp.csv tmp/_album_info/current_track.csv
-tractNumberTMP=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2'| sed 's/^0*//')
+traxNumberTMP=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2'| sed 's/^0*//')
 fi
 if [ -f tmp/Track.csv ]
 then
 cat tmp/Track.csv | awk -F'/' '{print $1}' | sed 's/track/Track/g' | sed 's/TRACK/Track/g' > tmp/_album_info/tracktmp.csv
 mv tmp/_album_info/tracktmp.csv tmp/_album_info/current_track.csv
-tractNumberTMP=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2'| sed 's/^0*//')
+traxNumberTMP=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2'| sed 's/^0*//')
 fi
-if [ -z "$tractNumberTMP" ]
+if [ -z "$traxNumberTMP" ]
 then
 echo "${bg_red}${white}---> There is no track N# :${orange} Enter manualy .eg:8
 ${reset}${white}"
@@ -136,7 +136,7 @@ fi
 ##
 ### For Directories
 ##
-tractNumber=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2'| sed 's/^0*//')
+traxNumber=$(cat tmp/_album_info/current_track.csv | awk  'NR == 2'| sed 's/^0*//')
 # Discinfo File in source folder
 if [ -f "$Path2album"/_album_info/disc.csv ]
 then
@@ -161,13 +161,13 @@ mkdir -p tmp/_album_info/Disc_"$DiscNumber"/
 # TITLE TRACK
 if [ -f tmp/TITLE.csv ]
 then
-cat tmp/TITLE.csv | sed 's/TITLE/Title/g' | sed 's/title/Title/g' | sed 's/\$/USD/g' | sed "s/\&amp;/'/g" > tmp/_album_info/title_"$DiscNumber"_"$tractNumber".csv
+cat tmp/TITLE.csv | sed 's/TITLE/Title/g' | sed 's/title/Title/g' | sed 's/\$/USD/g' | sed "s/\&amp;/'/g" > tmp/_album_info/title_"$DiscNumber"_"$traxNumber".csv
 fi
 if [ -f tmp/title.csv ]
 then
-cat tmp/title.csv | sed 's/TITLE/Title/g' | sed 's/title/Title/g'| sed 's/\$/USD/g'| sed "s/\&amp;/'/g" > tmp/_album_info/title_"$DiscNumber"_"$tractNumber".csv
+cat tmp/title.csv | sed 's/TITLE/Title/g' | sed 's/title/Title/g'| sed 's/\$/USD/g'| sed "s/\&amp;/'/g" > tmp/_album_info/title_"$DiscNumber"_"$traxNumber".csv
 fi
-TrackTitle=$(cat tmp/_album_info/title_"$DiscNumber"_"$tractNumber".csv| awk  'NR == 2'| sed 's/\$/USD/g'| sed "s/\&amp;/'/g")
+TrackTitle=$(cat tmp/_album_info/title_"$DiscNumber"_"$traxNumber".csv| awk  'NR == 2'| sed 's/\$/USD/g'| sed "s/\&amp;/'/g")
 
 # ISRC
 if [ -f tmp/ISRC.csv ]
@@ -235,10 +235,10 @@ TRACKTOTAL=$(cat tmp/_album_info/Disc_"$DiscNumber"/TracksTotal.csv | awk  'NR =
 # Duration
 if [ -f tmp/DURATION.csv ]
 then
-cat tmp/DURATION.csv | sed 's/duration/Duration/g' | sed 's/DURATION/Duration/g' > tmp/_album_info/Disc_"$DiscNumber"/Duration_track_"$tractNumber".csv
+cat tmp/DURATION.csv | sed 's/duration/Duration/g' | sed 's/DURATION/Duration/g' > tmp/_album_info/Disc_"$DiscNumber"/Duration_track_"$traxNumber".csv
 rm tmp/DURATION.csv
 fi
-Duration=$(cat tmp/_album_info/Disc_"$DiscNumber"/Duration_track_"$tractNumber".csv | awk  'NR == 2')
+Duration=$(cat tmp/_album_info/Disc_"$DiscNumber"/Duration_track_"$traxNumber".csv | awk  'NR == 2')
 
 # Genre
 if [ -f "$Path2album/Genre.csv" ]
@@ -249,23 +249,23 @@ else
 
 if [ -f tmp/GENRE.csv ]
 then
-cat tmp/GENRE.csv | sed 's/GENRE/Genre/g' | sed 's/genre/Genre/g'| sed 's/\/ /@/g'| sed 's/, /@/g'| sed 's/; /@/g' | sed 's/,/@/g'| sed 's/\//@/g'|sed 's/ \/ /@/g'> tmp/_album_info/Disc_"$DiscNumber"/Genre_track_"$tractNumber".csv
+cat tmp/GENRE.csv | sed 's/GENRE/Genre/g' | sed 's/genre/Genre/g'| sed 's/\/ /@/g'| sed 's/, /@/g'| sed 's/; /@/g' | sed 's/,/@/g'| sed 's/\//@/g'|sed 's/ \/ /@/g'> tmp/_album_info/Disc_"$DiscNumber"/Genre_track_"$traxNumber".csv
 rm tmp/GENRE.csv
 fi
 if [ -f tmp/genre.csv ]
 then
-cat tmp/genre.csv | sed 's/GENRE/Genre/g' | sed 's/genre/Genre/g'| sed 's/\/ /@/g'| sed 's/, /@/g' | sed 's/,/@/g'| sed 's/\//@/g'|sed 's/ \/ /@/g' > tmp/_album_info/Disc_"$DiscNumber"/Genre_track_"$tractNumber".csv
+cat tmp/genre.csv | sed 's/GENRE/Genre/g' | sed 's/genre/Genre/g'| sed 's/\/ /@/g'| sed 's/, /@/g' | sed 's/,/@/g'| sed 's/\//@/g'|sed 's/ \/ /@/g' > tmp/_album_info/Disc_"$DiscNumber"/Genre_track_"$traxNumber".csv
 rm cat tmp/genre.csv
 fi
-if [ -f tmp/_album_info/Disc_"$DiscNumber"/Genre_track_"$tractNumber".csv ]
+if [ -f tmp/_album_info/Disc_"$DiscNumber"/Genre_track_"$traxNumber".csv ]
 then
 echo "$white---> Genre             $greenFound"
 else
 echo "$white---> Genrating empty Genre"
 echo "Genre
-" > tmp/_album_info/Disc_"$DiscNumber"/Genre_track_"$tractNumber".csv
+" > tmp/_album_info/Disc_"$DiscNumber"/Genre_track_"$traxNumber".csv
 fi
-Genre=$(cat tmp/_album_info/Disc_"$DiscNumber"/Genre_track_"$tractNumber".csv | awk  'NR == 2')
+Genre=$(cat tmp/_album_info/Disc_"$DiscNumber"/Genre_track_"$traxNumber".csv | awk  'NR == 2')
 echo "Genre
 $Genre" > tmp/Current_Genre.csv
 fi
@@ -273,8 +273,8 @@ fi
 # Audio
 echo "Audio" > audio.csv
 cat tmp/temp_info.txt |awk '/Stream/' |awk  '/Audio:/' |awk  -F'Audio: ' '{print $2}' |awk -F', ' '{print $1, $2, $3, $4}' >> audio.csv
-mv audio.csv tmp/_album_info/Disc_"$DiscNumber"/Audio_"$tractNumber".csv
-Audio=$(cat tmp/_album_info/Disc_"$DiscNumber"/Audio_"$tractNumber".csv | awk  'NR == 2')
+mv audio.csv tmp/_album_info/Disc_"$DiscNumber"/Audio_"$traxNumber".csv
+Audio=$(cat tmp/_album_info/Disc_"$DiscNumber"/Audio_"$traxNumber".csv | awk  'NR == 2')
 
 # LABEL
 if [ -f tmp/LABEL.csv ]
@@ -302,23 +302,23 @@ LABEL=$(cat tmp/_album_info/Disc_"$DiscNumber"/Label.csv | awk  'NR == 2')
 # Comment
 if [ -f tmp/comment.csv ]
 then
-cat tmp/comment.csv | sed 's/comment/Comment/g' | sed 's/COMMENT/Comment/g' > tmp/_album_info/Disc_"$DiscNumber"/Comment_"$tractNumber".csv
+cat tmp/comment.csv | sed 's/comment/Comment/g' | sed 's/COMMENT/Comment/g' > tmp/_album_info/Disc_"$DiscNumber"/Comment_"$traxNumber".csv
 rm tmp/comment.csv
 fi
 if [ -f tmp/COMMENT.csv ]
 then
-cat tmp/COMMENT.csv | sed 's/comment/Comment/g' | sed 's/COMMENT/Comment/g' > tmp/_album_info/Disc_"$DiscNumber"/Comment_"$tractNumber".csv
+cat tmp/COMMENT.csv | sed 's/comment/Comment/g' | sed 's/COMMENT/Comment/g' > tmp/_album_info/Disc_"$DiscNumber"/Comment_"$traxNumber".csv
 rm cat tmp/COMMENT.csv
 fi
-if [ -f tmp/_album_info/Disc_"$DiscNumber"/Comment_"$tractNumber".csv ]
+if [ -f tmp/_album_info/Disc_"$DiscNumber"/Comment_"$traxNumber".csv ]
 then
 echo "$white---> Comment             $Comment"
 else
 echo "$white---> Genrating empty Comment"
 echo "Comment
-" > tmp/_album_info/Disc_"$DiscNumber"/Comment_"$tractNumber".csv
+" > tmp/_album_info/Disc_"$DiscNumber"/Comment_"$traxNumber".csv
 fi
-Comment=$(cat tmp/_album_info/Disc_"$DiscNumber"/Comment_"$tractNumber".csv | awk  'NR == 2')
+Comment=$(cat tmp/_album_info/Disc_"$DiscNumber"/Comment_"$traxNumber".csv | awk  'NR == 2')
 
 # ALBUMARTIST
 if [ -f tmp/ALBUMARTIST.csv ]
@@ -350,50 +350,58 @@ ALBUMARTIST=$(cat tmp/_album_info/Disc_"$DiscNumber"/Album_Artist.csv | awk  'NR
 # DATE
 if [ -f tmp/DATE.csv ]
 then
-cat tmp/DATE.csv | sed 's/DATE/Date/g' | sed 's/date/Date/g' > tmp/_album_info/Disc_"$DiscNumber"/Date_"$tractNumber".csv
+cat tmp/DATE.csv | sed 's/DATE/Date/g' | sed 's/date/Date/g' > tmp/_album_info/Disc_"$DiscNumber"/Date_"$traxNumber".csv
 rm tmp/DATE.csv
 fi
 if [ -f tmp/date.csv ]
 then
-cat tmp/date.csv | sed 's/DATE/Date/g' | sed 's/date/Date/g'  > tmp/_album_info/Disc_"$DiscNumber"/Date_"$tractNumber".csv
+cat tmp/date.csv | sed 's/DATE/Date/g' | sed 's/date/Date/g'  > tmp/_album_info/Disc_"$DiscNumber"/Date_"$traxNumber".csv
 rm cat tmp/date.csv
 fi
-if [ -f tmp/_album_info/Disc_"$DiscNumber"/Date_"$tractNumber".csv ]
+if [ -f tmp/_album_info/Disc_"$DiscNumber"/Date_"$traxNumber".csv ]
 then
 echo "$white---> Date             $greenFound"
 else
 echo "$white---> Genrating empty Date"
 echo "Date
-" > tmp/_album_info/Disc_"$DiscNumber"/Date_"$tractNumber".csv
+" > tmp/_album_info/Disc_"$DiscNumber"/Date_"$traxNumber".csv
 fi
 
 
 
-Date=$(cat tmp/_album_info/Disc_"$DiscNumber"/Date_"$tractNumber".csv | awk  'NR == 2')
+Date=$(cat tmp/_album_info/Disc_"$DiscNumber"/Date_"$traxNumber".csv | awk  'NR == 2')
 
 # YEAR
 if [ -f tmp/YEAR.csv ]
 then
-cat tmp/YEAR.csv | sed 's/YEAR/Year/g' | sed 's/year/Year/g' > tmp/_album_info/Disc_"$DiscNumber"/Year_"$tractNumber".csv
+cat tmp/YEAR.csv | sed 's/YEAR/Year/g' | sed 's/year/Year/g' > tmp/_album_info/Disc_"$DiscNumber"/Year_"$traxNumber".csv
 rm tmp/YEAR.csv
 fi
 if [ -f tmp/year.csv ]
 then
-cat tmp/date.csv | sed 's/YEAR/Year/g' | sed 's/year/Year/g' > tmp/_album_info/Disc_"$DiscNumber"/Year_"$tractNumber".csv
+cat tmp/date.csv | sed 's/YEAR/Year/g' | sed 's/year/Year/g' > tmp/_album_info/Disc_"$DiscNumber"/Year_"$traxNumber".csv
 rm cat tmp/year.csv
 fi
-if [ -f tmp/_album_info/Disc_"$DiscNumber"/Year_"$tractNumber".csv ]
+if [ -f tmp/_album_info/Disc_"$DiscNumber"/Year_"$traxNumber".csv ]
 then
 echo "$white---> Year             $greenFound"
 else
 echo "$white---> Genrating empty Year"
 echo "Year
-" > tmp/_album_info/Disc_"$DiscNumber"/Year_"$tractNumber".csv
+" > tmp/_album_info/Disc_"$DiscNumber"/Year_"$traxNumber".csv
 fi
-YEAR=$(cat tmp/_album_info/Disc_"$DiscNumber"/Year_"$tractNumber".csv | awk  'NR == 2')
+YEAR=$(cat tmp/_album_info/Disc_"$DiscNumber"/Year_"$traxNumber".csv | awk  'NR == 2')
 
 
 # Discogs id in id3 tag
+# CSV is OVER ID3 TAGS !!!!!
+#if [ -f "$Path2album"/_album_info/Album_ADDRESS.csv ]
+#then
+#echo "${red}---> CSV is OVER ID3 TAGS !!!!!"
+#echo "${green}---> DISCOGSID has been found in                      : ${orange}"$Path2album"/_album_info/Album_ADDRESS.csv"
+#else
+
+
 mkdir -p "$Path2album"/_album_info/CSVs/
 if [ -f tmp/DISCOGSID.csv ]
 then
@@ -401,27 +409,32 @@ echo "${green}---> DISCOGSID has been found in the current ID3 tags : ${orange}t
 if [ -f "$Path2album"/_album_info/CSVs/DISCOGSID.csv ]
 then
 echo "${white}---> DISCOGSID has been found in _album_info source   : ${red}"$Path2album"/_album_info/CSVs/DISCOGSID.csv"
-txtfileDISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv|awk 'NR == 2')
+txtfileDISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv|awk 'NR == 2'|sed 's/è/e/g'|sed 's/à/a/g'|sed 's/ç/c/g')
 echo "${green}---> The DISCOGSID id in the CSVs folder will be used : ${orange}$txtfileDISCOGSID"
-DISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv| awk  'NR == 2')
+DISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv| awk  'NR == 2'|sed 's/è/e/g'|sed 's/à/a/g'|sed 's/ç/c/g')
 echo "DISCOGSID=\"$DISCOGSID\"" >> tmp/tmp_Bash
 else
-cat tmp/DISCOGSID.csv > "$Path2album"/_album_info/CSVs/DISCOGSID.csv
-DISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv| awk  'NR == 2')
+cat tmp/DISCOGSID.csv |sed 's/è/e/g'|sed 's/à/a/g'|sed 's/ç/c/g' > "$Path2album"/_album_info/CSVs/DISCOGSID.csv
+DISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv| awk  'NR == 2'|sed 's/è/e/g'|sed 's/à/a/g'|sed 's/ç/c/g')
 echo "DISCOGSID=\"$DISCOGSID\"" >> tmp/tmp_Bash
 fi
 else
 echo "${green}---> No DISCOGSID id found at this point"
 fi
+
+
+# Closing if [ -f "$Path2album"/_album_info/Album_ADDRESS.csv ]
+#fi
+
 # bash_tmp profile
 source tmp/tmp_Bash
 extension="${thefilelist##*.}"
 
 echo "FileSize
-$FileSize" > tmp/_album_info/Disc_"$DiscNumber"/FileSize_"$tractNumber".csv
+$FileSize" > tmp/_album_info/Disc_"$DiscNumber"/FileSize_"$traxNumber".csv
 cat tmp/tmp_Bash > tmp/tmp_Bash2
 echo "Path2album=\"$Path2album\"
-tractNumber=\"$tractNumber\"
+traxNumber=\"$traxNumber\"
 DiscNumber=\"$DiscNumber\"
 Artist=\"$Artist\"
 extension=\"$extension\"
@@ -439,7 +452,7 @@ FileSize=\"$FileSize\"
 ISRC=\"$ISRC\"
 DISCOGSID=\"$DISCOGSID\"
 " >> tmp/tmp_Bash2
-echo "TrackTitle=\$(cat tmp/_album_info/title_\"\$DiscNumber\"_\"\$tractNumber\".csv| awk  'NR == 2')" >> tmp/tmp_Bash2
+echo "TrackTitle=\$(cat tmp/_album_info/title_\"\$DiscNumber\"_\"\$traxNumber\".csv| awk  'NR == 2')" >> tmp/tmp_Bash2
 echo "Album_Title=\$(cat tmp/_album_info/Album_Title.csv| awk  'NR == 2')" >> tmp/tmp_Bash2
 mv tmp/tmp_Bash2 tmp/tmp_Bash
 

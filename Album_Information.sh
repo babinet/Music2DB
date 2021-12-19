@@ -92,7 +92,8 @@ cat tmp/artistcreditTMP |sed '1d' >> "$Path2album"/_album_info/credits2taxonomyA
 
 echo "Artist-address|ArtistID|Artist_TID|Artist" > "$Path2album"/_album_info/credits_Artiss_list.csv
 cat tmp/artistCreditlListTMP | sed 's/\[31m//g'| sed 's/\[97m//g'|sed "s/\&#x27;/'/g"| sed 's/\&amp;/\&/g'|sed 's/\&quot;/"/g'>> "$Path2album"/_album_info/credits_Artiss_list.csv
-
+IFS=$'\n'       # Processing line
+set -f          # disable globbing
 # Album Job Loop
 countjob='0'
 cat "$Path2album"/_album_info/credits2taxonomyAlbum.csv | sed '1d' | while read thelineartist
@@ -134,6 +135,20 @@ echo "releasenoteslines
 " > "$Path2album"/_album_info/releaseNote.csv
 fi
 
+#Format
+FormatString=$(echo "id=\"release-barcodes")
+if grep -q "$BarcodeeString" "$Path2album"/_album_info/ALBUM_Page.html
+then
+echo "${green}---> Barcode information are there!"
+barcodelines=$(cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n'|awk -F'id="release-barcodes' '{print $2}' |awk -F'<ul' '{print $2}'|awk -F'</ul>' '{print $1}'| sed 's/<li/\
+<li class=\"list-group-item\"/g' |awk NF |tr -d '\n'|awk '{print $0"</ul>"}'| sed 's/class="simple_iPiaF"/<ul class=\"list-group\"/g')
+echo "barcodelines
+$barcodelines" |sed 's/\&#x27;/"/g'|sed 's/\&amp;/n/g'|sed 's/\&quot;/"/g' > "$Path2album"/_album_info/barcodelines.csv
+else
+echo "${red}---> Barcode information are not there!"
+echo "barcodelines
+" > "$Path2album"/_album_info/barcodelines.csv
+fi
 
 
 
@@ -307,7 +322,7 @@ for labelline in $(cat tmp/tempLabel)
 do
 LabeID=$(echo "$labelline"| awk NF| awk -F'/label/' '{print $2}'| awk -F'"' '{print $1}' )
 LabeTID=$(echo "$labelline"| awk NF| awk -F'/label/' '{print $2}'| awk -F'-' '{print $1}' )
-LabeName=$(echo "$labelline"| awk NF| awk -F'/label/' '{print $2}'| awk -F'">' '{print $2}' | awk -F'</a>' '{print $1}')
+LabeName=$(echo "$labelline"| awk NF| awk -F'/label/' '{print $2}'| awk -F'">' '{print $2}' | awk -F'</a>' '{print $1}'|sed "s/\&#x27;/'/g"| sed 's/\&amp;/\&/g'|sed 's/\&quot;/"/g' |sed 's/&amp;/\&/g')
 LabeCatalogNumber=$(echo "$labelline"| awk NF| awk -F'> – ' '{print $2}'| awk -F'<' '{print $1}' )
 LabeURL=$(echo "$labelline"| awk NF| awk '/\/label\//'| awk -F'/label/' '{print "/label/"$2}'| awk -F'"' '{print $1}' )
 echo ""$LabeID"|"$LabeName"|"$LabeTID"|"$LabeCatalogNumber"|"$LabeURL"" >> tmp/tempLabelTMP
@@ -315,7 +330,7 @@ done
 if [ -f tmp/tempLabelTMP ]
 then
 echo "LabeID|LabeName|LabeTID|LabeCatalogNumber|LabeURL" > "$Path2album"/_album_info/CSVs/Labels.csv
-cat tmp/tempLabelTMP >> "$Path2album"/_album_info/CSVs/Labels.csv
+cat tmp/tempLabelTMP |sed "s/\&#x27;/'/g"| sed 's/\&amp;/\&/g'|sed 's/\&quot;/"/g'| sed 's/&amp;/\&/g' >> "$Path2album"/_album_info/CSVs/Labels.csv
 fi
 fi
 
@@ -353,7 +368,7 @@ done
 if [ -f tmp/tempGenreTMP ]
 then
 echo "Genre_Name|GenreURL" > "$Path2album"/_album_info/CSVs/Genres.csv
-cat tmp/tempGenreTMP |sed "s/\&#x27;/'/g"| sed 's/\&amp;/\&/g'|sed 's/\&quot;/"/g' >> "$Path2album"/_album_info/CSVs/Genres.csv
+cat tmp/tempGenreTMP |sed "s/&#x27;/'/g"| sed 's/&amp;/\&/g'|sed 's/\&quot;/"/g' >> "$Path2album"/_album_info/CSVs/Genres.csv
 fi
 fi
 
@@ -439,6 +454,55 @@ paste -d '|' tmp/job_10.csv tmp/job_9.csv tmp/job_8.csv tmp/job_7.csv tmp/job_6.
 fi
 
 CreditAlbum=$(cat "$Path2album"/_album_info/jobe_Album.csv| awk  'NR == 2')
+
+
+#Format type / Release type
+if [ -f "$Path2album"/_album_info/CSVs/CSVs/info_support.csv ]
+then
+SupportTypeRelease=$(cat $Path2album/_album_info/CSVs/info_support.csv| awk  'NR == 2')
+echo "SupportTypeRelease=\$(cat \"\$Path2album\"/_album_info/CSVs/info_support.csv| awk  'NR == 2')" >> tmp/tmp_Bash
+echo "${green}---> Fromat & release information are present in      :${orange} "$Path2album"/_album_info/CSVs/CSVs/info_support.csv"
+echo "${white}---> Fromat & release information are present in      :${orange} $SupportTypeRelease"
+else
+FormatString=$(echo "class=\"format_item_3SAJn")
+if [ -f tmp/releaseinfo.tmp ]
+then
+rm tmp/releaseinfo.tmp
+fi
+if grep -q "$FormatString" "$Path2album"/_album_info/ALBUM_Page.html
+then
+echo "${green}---> Fromat information are present in the html !"
+Formatlines=$(cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n'|awk -F'table_1fWaB' '{print $2}'|awk -F'</tbody>' '{print $1}' | sed 's/<div class="format_item_3SAJn"/\
+<div class="format_item_3SAJn"/g' |awk '/class="format_item_3SAJn"/'|awk -F'</div>' '{print $1}')
+
+IFS=$'\n'       # Processing line
+set -f          # disable globbing
+for lineFrmat in $(echo "$Formatlines")
+do
+Supports=$(echo "$lineFrmat" |awk -F'<a' '{print $2}'|awk -F'>' '{print $2}' |awk -F'<' '{print $1}')
+TypeRelesae=$(echo "$lineFrmat" |awk -F'</a>, ' '{print $2}'|sed 's/<!-- -->//g' | awk -F'<' '{print $1}'| sed 's/, /@/g')
+
+echo "$Supports|$TypeRelesae" >> tmp/releaseinfo.tmp
+done
+else
+echo "${red}---> Fromat information are not there!"
+echo "Support_Type|ReleaseType
+" > "$Path2album"/_album_info/CSVs/info_support.csv
+fi
+
+TypeRelease=$(cat tmp/releaseinfo.tmp |awk -F'|' '{print $2}'|tr '\n' '@'|sed 's/.$//'|tr '@' '\n' |awk '!seen[$0]++'|tr '\n' '@'|sed 's/.$//')
+support=$(cat tmp/releaseinfo.tmp |awk -F'|' '{print $1}'|awk '!seen[$0]++'|tr '\n' '@'|sed 's/.$//')
+
+echo "Support_Type|ReleaseType
+$support|$TypeRelease" > tmp/info_support.csv
+cp tmp/info_support.csv "$Path2album"/_album_info/CSVs/info_support.csv
+
+echo "SupportTypeRelease=\$(cat \"\$Path2album\"/_album_info/CSVs/info_support.csv| awk  'NR == 2')" >> tmp/tmp_Bash
+
+fi
+
+
+
 
 
 
