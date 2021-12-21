@@ -470,7 +470,24 @@ FilenoextTMP="${thefilelist##*/}"
 # fileNoExt
 fileNoExt=$(echo "$FilenoextTMP" |sed "s/.$extension//g"| sed 's/\$/USD/g'|sed 's/û/u/g'|sed 's/ê/e/g'| iconv -f UTF-8 -t ascii//TRANSLIT//IGNORE|sed 's/"//g'|sed "s/\`//g")
 # FileOutNoExt
+
+
+
 FileOutNoExt=$(echo "$traxNumber"_"$TrackTitle"| sed 's/\$/USD/g'|sed 's/û/u/g'|sed 's/ê/e/g'| iconv -f UTF-8 -t ascii//TRANSLIT//IGNORE|sed 's/"//g'|sed "s/\`//g" | sed 's/\//_/g')
+
+# If song name is toooo looong then change it to TID + DISK # +TRACK #
+fileNoExtLegth=$(echo "$FileOutNoExt"| awk '{print length}')
+if [ "$fileNoExtLegth" -ge 60 ]
+then
+echo "${red}---> The output file name ist too loong                 : $fileNoExtLegth chars
+${red}########################################################################################################################
+${red}# ${white}$FileOutNoExt
+${red}########################################################################################################################"
+echo "${green}---> Le'ts change it to file id DISK# TRK#              ${white}: "$traxNumber"_TRK_"$Album_TID"-"$DiscNumber"-"
+FileOutNoExt=$(echo "$traxNumber"_TRK_"$Album_TID"-"$DiscNumber")
+fi
+
+
 
 releaseDateinfo=$(cat "$Path2album"/_album_info/CSVs/ReleaseDate.csv| awk  'NR == 2')
 if [ "$releaseDateinfo" == "" ]
@@ -610,7 +627,7 @@ NodIDLength=$(echo "$NodeIDTMP"|awk '{print length}')
 
 if [ "$NodIDLength" -ge 10 ]
 then
-echo "${red}---> Node ID ${orange}NodeID${red} lenght is more than 9 digits"
+echo "${red}---> Node ID ${orange}NodeID${red} length is more than 9 digits"
 if [ -f ../_Output/temp_ID.txt ]
 then
 echo "${green}---> Temp Node ID found in                            :${orange} ../_Output/temp_ID.txt"

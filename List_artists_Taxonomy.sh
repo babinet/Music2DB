@@ -86,3 +86,4 @@ echo "Artist-address|ArtistID|Artist_TID|Artist" > _ARTIST_2_IMPORT.csv
 cat tmp/temp2 |awk '!seen[$0]++' >> _ARTIST_2_IMPORT.csv
 
 
+awk -F'|' 'NR==FNR{a[$3];next} !($3 in a)' tmp/TID_LIST.txt _ARTIST.CSV > ___LISt-ARTIST.CSV

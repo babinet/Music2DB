@@ -272,7 +272,7 @@ fi
 
 # Audio
 echo "Audio" > audio.csv
-cat tmp/temp_info.txt |awk '/Stream/' |awk  '/Audio:/' |awk  -F'Audio: ' '{print $2}' |awk -F', ' '{print $1, $2, $3, $4}' >> audio.csv
+cat tmp/temp_info.txt |awk '/Stream/' |awk  '/Audio:/' |awk  -F'Audio: ' '{print $2}' |awk -F', ' '{print $1, $2, $3, $4, $5}' >> audio.csv
 mv audio.csv tmp/_album_info/Disc_"$DiscNumber"/Audio_"$traxNumber".csv
 Audio=$(cat tmp/_album_info/Disc_"$DiscNumber"/Audio_"$traxNumber".csv | awk  'NR == 2')
 

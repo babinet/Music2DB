@@ -182,14 +182,14 @@ echo "$TrackNumber|$SongName">> diskinfo/songs_list.csv
 
 done
 echo "Artist-address|ArtistID|Artist_TID|Artist" > tmp/artist_list_tracks.csv
-#if [ -f tmp/artist_list_tracksTMP.csv ]
-#then
+if [ -f tmp/artist_list_tracksTMP.csv ]
+then
 echo "${white}---> Found ${green}tmp/artist_list_tracksTMP.csv "
 cat tmp/artist_list_tracksTMP.csv | awk '!/./ || !seen[$0]++' >> tmp/artist_list_tracks.csv
 rm tmp/artist_list_tracksTMP.csv
-#else
+else
 echo "${red}---> NOT artist list FOUND !!! yet         :tmp/artist_list_tracksTMP.csv "
-#fi
+fi
 source tmp/tmp_Bash
 
 
@@ -332,7 +332,6 @@ $informations" > diskinfo/"$index"_info.csv
 done
 
 
-
 if [ -f diskinfo/1_info.csv ]
 then
 echo "1_info found"
@@ -428,3 +427,5 @@ cat tmp/artist_listtmp.csv |awk '!seen[$0]++' | awk NF >> "$Path2album"/_album_i
 else
 echo "${orange}---> There is no artist"
 fi
+
+

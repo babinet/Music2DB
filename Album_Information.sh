@@ -135,20 +135,20 @@ echo "releasenoteslines
 " > "$Path2album"/_album_info/releaseNote.csv
 fi
 
-#Format
-FormatString=$(echo "id=\"release-barcodes")
-if grep -q "$BarcodeeString" "$Path2album"/_album_info/ALBUM_Page.html
-then
-echo "${green}---> Barcode information are there!"
-barcodelines=$(cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n'|awk -F'id="release-barcodes' '{print $2}' |awk -F'<ul' '{print $2}'|awk -F'</ul>' '{print $1}'| sed 's/<li/\
-<li class=\"list-group-item\"/g' |awk NF |tr -d '\n'|awk '{print $0"</ul>"}'| sed 's/class="simple_iPiaF"/<ul class=\"list-group\"/g')
-echo "barcodelines
-$barcodelines" |sed 's/\&#x27;/"/g'|sed 's/\&amp;/n/g'|sed 's/\&quot;/"/g' > "$Path2album"/_album_info/barcodelines.csv
-else
-echo "${red}---> Barcode information are not there!"
-echo "barcodelines
-" > "$Path2album"/_album_info/barcodelines.csv
-fi
+##Format
+#FormatString=$(echo "id=\"release-barcodes")
+#if grep -q "$BarcodeeString" "$Path2album"/_album_info/ALBUM_Page.html
+#then
+#echo "${green}---> Barcode information are there!"
+#barcodelines=$(cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n'|awk -F'id="release-barcodes' '{print $2}' |awk -F'<ul' '{print $2}'|awk -F'</ul>' '{print $1}'| sed 's/<li/\
+#<li class=\"list-group-item\"/g' |awk NF |tr -d '\n'|awk '{print $0"</ul>"}'| sed 's/class="simple_iPiaF"/<ul class=\"list-group\"/g')
+#echo "barcodelines
+#$barcodelines" |sed 's/\&#x27;/"/g'|sed 's/\&amp;/n/g'|sed 's/\&quot;/"/g' > "$Path2album"/_album_info/barcodelines.csv
+#else
+#echo "${red}---> Barcode information are not there!"
+#echo "barcodelines
+#" > "$Path2album"/_album_info/barcodelines.csv
+#fi
 
 
 
@@ -160,7 +160,7 @@ echo "${green}---> Barcode information are there!"
 barcodelines=$(cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n'|awk -F'id="release-barcodes' '{print $2}' |awk -F'<ul' '{print $2}'|awk -F'</ul>' '{print $1}'| sed 's/<li/\
 <li class=\"list-group-item\"/g' |awk NF |tr -d '\n'|awk '{print $0"</ul>"}'| sed 's/class="simple_iPiaF"/<ul class=\"list-group\"/g')
 echo "barcodelines
-$barcodelines" |sed 's/\&#x27;/"/g'|sed 's/\&amp;/n/g'|sed 's/\&quot;/"/g' > "$Path2album"/_album_info/barcodelines.csv
+$barcodelines" |sed 's/\&#x27;/"/g'|sed 's/\&amp;/n/g'|sed 's/\&quot;/"/g'|sed s'/|/•/g' > "$Path2album"/_album_info/barcodelines.csv
 else
 echo "${red}---> Barcode information are not there!"
 echo "barcodelines
@@ -279,7 +279,7 @@ then
 echo "${green}---> Notes on the Master has been found in            : ${orange}"$Path2album"/_album_info/CSVs/NotesMaster.csv"
 else
 echo "NotesMaster" > "$Path2album"/_album_info/CSVs/NotesMaster.csv
-cat ""$Path2album"/_album_info/_MASTER_ALBUM_Page.html"|tr -d '\n' |awk -F'<div class="head">Notes:</div>' '{print $2}'|awk -F'<div class="content">' '{print $2}' |awk -F'</div>' '{print $1}'|awk NF| sed 's/\&quot;/"/g' >> "$Path2album"/_album_info/CSVs/NotesMaster.csv
+cat ""$Path2album"/_album_info/_MASTER_ALBUM_Page.html"|tr -d '\n' |awk -F'<div class="head">Notes:</div>' '{print $2}'|awk -F'<div class="content">' '{print $2}' |awk -F'</div>' '{print $1}'|awk NF| sed 's/\&quot;/"/g'|sed s'/|/•/g' >> "$Path2album"/_album_info/CSVs/NotesMaster.csv
 cat "$Path2album"/_album_info/CSVs/NotesMaster.csv | awk  'NR == 2'
 fi
 # Release Information
@@ -495,7 +495,7 @@ support=$(cat tmp/releaseinfo.tmp |awk -F'|' '{print $1}'|awk '!seen[$0]++'|tr '
 
 echo "Support_Type|ReleaseType
 $support|$TypeRelease" > tmp/info_support.csv
-cp tmp/info_support.csv "$Path2album"/_album_info/CSVs/info_support.csv
+cat tmp/info_support.csv | sed 's/\&quot;/\"/g' > "$Path2album"/_album_info/CSVs/info_support.csv
 
 echo "SupportTypeRelease=\$(cat \"\$Path2album\"/_album_info/CSVs/info_support.csv| awk  'NR == 2')" >> tmp/tmp_Bash
 
