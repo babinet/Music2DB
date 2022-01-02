@@ -272,7 +272,7 @@ fi
 
 # Audio
 echo "Audio" > audio.csv
-cat tmp/temp_info.txt |awk '/Stream/' |awk  '/Audio:/' |awk  -F'Audio: ' '{print $2}' |awk -F', ' '{print $1, $2, $3, $4, $5}' >> audio.csv
+cat tmp/temp_info.txt |awk '/Stream/' |awk  '/Audio:/' |awk  -F'Audio: ' '{print $2}' |awk -F', ' '{print $1, $2, $3, $4}' >> audio.csv
 mv audio.csv tmp/_album_info/Disc_"$DiscNumber"/Audio_"$traxNumber".csv
 Audio=$(cat tmp/_album_info/Disc_"$DiscNumber"/Audio_"$traxNumber".csv | awk  'NR == 2')
 
@@ -432,7 +432,6 @@ extension="${thefilelist##*.}"
 
 echo "FileSize
 $FileSize" > tmp/_album_info/Disc_"$DiscNumber"/FileSize_"$traxNumber".csv
-cat tmp/tmp_Bash > tmp/tmp_Bash2
 echo "Path2album=\"$Path2album\"
 traxNumber=\"$traxNumber\"
 DiscNumber=\"$DiscNumber\"
@@ -451,9 +450,8 @@ YEAR=\"$YEAR\"
 FileSize=\"$FileSize\"
 ISRC=\"$ISRC\"
 DISCOGSID=\"$DISCOGSID\"
-" >> tmp/tmp_Bash2
-echo "TrackTitle=\$(cat tmp/_album_info/title_\"\$DiscNumber\"_\"\$traxNumber\".csv| awk  'NR == 2')" >> tmp/tmp_Bash2
-echo "Album_Title=\$(cat tmp/_album_info/Album_Title.csv| awk  'NR == 2')" >> tmp/tmp_Bash2
-mv tmp/tmp_Bash2 tmp/tmp_Bash
+" >> tmp/tmp_Bash
+echo "TrackTitle=\$(cat tmp/_album_info/title_\"\$DiscNumber\"_\"\$traxNumber\".csv| awk  'NR == 2')" >> tmp/tmp_Bash
+echo "Album_Title=\$(cat tmp/_album_info/Album_Title.csv| awk  'NR == 2')" >> tmp/tmp_Bash
 
 cd - &>/dev/null

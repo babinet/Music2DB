@@ -31,6 +31,11 @@ echo "$bg_blue$white Hello I am Credits.sh$reset"
 echo "${white}---> i'm getting tracks taginfomation on Discogs"
 
 source tmp/tmp_Bash
+
+
+NuberOfTracks=$(cat tmp/listtmp.txt|wc -l | sed 's/      //g')
+echo "${white}---> Nuber of tracks in this disk                     :${orange}$NuberOfTracks"
+
 if [ -f diskinfo/1_info.csv ]
 then
 rm  diskinfo/*_info.csv
@@ -43,13 +48,14 @@ then
 diskinfoDISCOGSID=$(cat diskinfo/diskinfoDISCOGSID)
 fi
 echo DISCOGSID $DISCOGSID
-#echo "2" > tmp/default_choice
+#echo "1" > tmp/default_choice
 if [ -f tmp/default_choice ]
 then
 default_choice=$(cat tmp/default_choice)
 echo "${green}---> tmp/default_choice id already checkecked         :$orange$default_choice"
 else
 echo "${green}########################################################################################################################################
+---> ${white}---> Nuber of tracks in this disk is              :${orange}$NuberOfTracks
 ---> ${white}The current processed release page is             :${orange}$AdressReleaseDiscogs${green}
 ########################################################################################################################################"
 read -p "Choices
@@ -150,7 +156,7 @@ for infocleaneup in $(echo "$SongInfoSource")
 do
 
 DiskSongNumber=$(cat "$infocleaneup"| awk  'NR == 1')
-cat "$infocleaneup" | awk '!/./ || !seen[$0]++' |sed '/Job_ROW_SEPARATOR/q'|awk '!/Job_ROW_SEPARATOR/' > diskinfo/SongInfo/"$DiskSongNumber"_Song_info.txt
+cat "$infocleaneup" | awk '!/./ || !seen[$0]++' |sed '/Job_ROW_SEPARATOR/q'|awk '!/Job_ROW_SEPARATOR/' | sed 's/NEWLINENEWLINE//g' > diskinfo/SongInfo/"$DiskSongNumber"_Song_info.txt
 cat "$infocleaneup" |sed -n '/Job_ROW_SEPARATOR/,$p'|awk '!/Job_ROW_SEPARATOR/'|tr -d '\n' | sed 's/NEWLINENEWLINE/\
 /g' |awk NF >> diskinfo/SongInfo/"$DiskSongNumber"_Song_info.txt
 rm "$infocleaneup"
@@ -412,6 +418,8 @@ else
 echo "10_pers|10_info
 |" > diskinfo/10_info.csv
 fi
+
+
 
 
 paste -d '|' diskinfo/1_info.csv diskinfo/2_info.csv diskinfo/3_info.csv diskinfo/4_info.csv diskinfo/5_info.csv diskinfo/6_info.csv diskinfo/7_info.csv diskinfo/8_info.csv diskinfo/9_info.csv diskinfo/10_info.csv > diskinfo/Trackinfo.csv

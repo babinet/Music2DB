@@ -75,7 +75,7 @@ done
 }
 
 # Declare the array
-linux=('ScanNGen' 'Cue_Rename' 'Tracks_Number_from_Name' 'Cue_2_Tracks' 'Generate_CSV_and_Files' 'Renumber_TrackBtrack_and_Name' 'Renumber_TrackBtrack_only' 'track_by_Track_Number' 'Mass_Print_Artists' 'FFmpef_CueSplit' 'Mass_Print_Album_N_DiscogsID' 'DeleteFields')
+linux=('ScanNGen' 'MANUAL_BOOTLEGS' 'Cue_Rename' 'Tracks_Number_from_Name' 'Cue_2_Tracks' 'Generate_CSV_and_Files' 'Renumber_TrackBtrack_and_Name' 'Renumber_TrackBtrack_only' 'track_by_Track_Number' 'Mass_Print_Artists' 'FFmpef_CueSplit' 'Mass_Print_Album_N_DiscogsID' 'DeleteFields')
 
 # Call the subroutine to create the menu
 menu_from_array "${linux[@]}"
@@ -155,6 +155,14 @@ then
 ./FFmpef_CueSplit.sh
 fi
 
+if [ $item.sh = MANUAL_BOOTLEGS.sh ]
+then
+echo "${white}######################################
+#--> ${green}Manual Edit From metadata only...
+${white}#--> ${green}Working in _MANUAL as base directory
+${white}######################################${reset}"
+./MANUAL_BOOTLEGS.sh
+fi
 
 
 if [ $item.sh = Mass_Print_Album_N_DiscogsID.sh ]
