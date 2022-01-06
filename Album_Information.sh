@@ -135,21 +135,6 @@ echo "releasenoteslines
 " > "$Path2album"/_album_info/releaseNote.csv
 fi
 
-##Format
-#FormatString=$(echo "id=\"release-barcodes")
-#if grep -q "$BarcodeeString" "$Path2album"/_album_info/ALBUM_Page.html
-#then
-#echo "${green}---> Barcode information are there!"
-#barcodelines=$(cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n'|awk -F'id="release-barcodes' '{print $2}' |awk -F'<ul' '{print $2}'|awk -F'</ul>' '{print $1}'| sed 's/<li/\
-#<li class=\"list-group-item\"/g' |awk NF |tr -d '\n'|awk '{print $0"</ul>"}'| sed 's/class="simple_iPiaF"/<ul class=\"list-group\"/g')
-#echo "barcodelines
-#$barcodelines" |sed 's/\&#x27;/"/g'|sed 's/\&amp;/n/g'|sed 's/\&quot;/"/g' > "$Path2album"/_album_info/barcodelines.csv
-#else
-#echo "${red}---> Barcode information are not there!"
-#echo "barcodelines
-#" > "$Path2album"/_album_info/barcodelines.csv
-#fi
-
 
 
 #Barcode

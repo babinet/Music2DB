@@ -34,8 +34,8 @@ source tmp/tmp_Bash
 
 
 NuberOfTracks=$(cat tmp/listtmp.txt|wc -l | sed 's/      //g')
-echo "${white}---> Nuber of tracks in this disk                     :${orange}$NuberOfTracks"
-
+echo "${white}---> Number of tracks in this disk                     :${orange}$NuberOfTracks"
+echo "${white}---> The track is numbered                             :${orange}$traxNumber"
 if [ -f diskinfo/1_info.csv ]
 then
 rm  diskinfo/*_info.csv
@@ -240,6 +240,10 @@ done
 track_choice=$(echo "$chosen_track"| awk '{print $1}')
 TrackTitle=$(echo "$chosen_track"| awk -F'|' '{print $2}')
 cat diskinfo/SongInfo/"$track_choice"_Song_info.txt
+
+traxNumber=$(cat diskinfo/SongInfo/"$track_choice"_Song_info.txt|awk 'NR == 1'|awk -F'-' '{print $2}')
+echo "${white}---> Track Number \$traxNumber is now                :${orange} $traxNumber"
+echo "traxNumber"=\"$traxNumber\" >> tmp/tmp_Bash
 echo "$TrackTitle" | sed 's/\$/USD/g' | sed "s/\&amp;/'/g"> diskinfo/TrackName
 echo "TrackTitle=\$(cat diskinfo/TrackName)" >> tmp/tmp_Bash
 TRACTITLE_ON_DOSCOGS="$TrackTitle"

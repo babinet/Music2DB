@@ -435,8 +435,17 @@ echo $purple $UUID UUID UUID UUID
 
 ./Album_Information.sh
 
-ReleaseNote=$(cat "$Path2album"/_album_info/releaseNote.csv| awk  'NR == 2')
 BarCode=$(cat "$Path2album"/_album_info/barcodelines.csv| awk  'NR == 2')
+
+
+if [ -f "$Path2album"/_album_info/info.txt ]
+then
+echo "${white}---> Info text file found in                          : ${orange}"$Path2album"/_album_info/info.txt"
+NoteInPlace=$(cat "$Path2album"/_album_info/info.txt | tr '\n' '∫'| tr -d '\r' |sed 's/∫/<br>/g')
+sed -i.back "$ s/$/$NoteInPlace/" "$Path2album"/_album_info/releaseNote.csv
+fi
+ReleaseNote=$(cat "$Path2album"/_album_info/releaseNote.csv| awk  'NR == 2')
+
 
 mkdir -p ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"
 echo "${white}---> Creating Output folder                           : ${orange}../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"${white}"
@@ -719,31 +728,7 @@ echo "Album_TID|Album_Title|Album_Image|Body|ImagesFID
 $Album_TID|$Album_Title|$Album_Image||$ImagesFID" > Taxonomy_AlbumTMP
 # CSV Node Track Audio
 echo "${white}---> NODE ID = Album_TID + Disc N# + track N#"
-NodeIDTMP=$(echo "$Album_TID$DiscNumber$traxNumber")
-NodIDLength=$(echo "$NodeIDTMP"|awk '{print length}')
-
-
-
-if [ "$NodIDLength" -ge 10 ]
-then
-echo "${red}---> Node ID ${orange}NodeID${red} length is more than 9 digits"
-if [ -f ../_Output/temp_ID.txt ]
-then
-echo "${green}---> Temp Node ID found in                            :${orange} ../_Output/temp_ID.txt"
-else
-wget -O  tmp/tempID https://music.sous-paris.com/used-nid
-cat tmp/tempID |awk '!/</'|awk '!/>/'|awk '!/\*/'|awk '!/x/'|awk NF|sed '1d' > ../_Output/temp_ID.txt
-fi
-cat ../_Output/temp_ID.txt |sort -r | head -n1 | awk '{print $1+1}' > tmp/NODEID_FROMLIST
-
-NodeID=$(cat tmp/NODEID_FROMLIST)
-echo "$NodeID" > tmp/NODEID_FROMLIST
-echo "$NodeID" >> ../_Output/temp_ID.txt
-echo "${green}---> temp Node ID genrated_from_list                  :${green} $NodeID"
-else
 NodeID=$(echo "$Album_TID$DiscNumber$traxNumber")
-echo "${white}---> Deffault node id                                 :${green} $NodeID"
-fi
 
 
 TrackInfoArtist=$(cat tmp/Trackinfo.csv| awk  'NR == 2')
