@@ -213,7 +213,8 @@ echo "$white---> Address Page Artist                              : ${orange}$Ad
 ArtistID=$(echo "$AddressPageArtist"| awk -F'/artist/' '{print $2}' )
 fi
 
-ArtistMachineName=${ArtistID#*-}
+ArtistMachineNameTMP=${ArtistID#*-}
+ArtistMachineName=$(echo "$ArtistMachineNameTMP"|sed 's/é/e/g'|sed 's/É/E/g')
 if [ -f ""$Path2album"/_album_info/Various.csv" ]
 then
 ArtistMachineName="Various"
@@ -347,7 +348,7 @@ OutputAlbumFolder="$Album_TID"
 echo "${red}---> Percent in name % in                               : ${green}$OutputAlbumFolder"
 else
 
-OutputAlbumFolder=$(echo "$OutputAlbumFolderTMP"-"$Album_TID" | sed 's/\$/USD/g'|sed 's/û/u/g'|sed 's/ê/e/g'| iconv -f UTF-8 -t ascii//TRANSLIT//IGNORE|sed 's/"//g'|sed "s/\`//g")
+OutputAlbumFolder=$(echo "$OutputAlbumFolderTMP"-"$Album_TID" | sed 's/\$/USD/g'|sed 's/û/u/g'|sed 's/ê/e/g'|sed 's/é/e/g'|sed 's/É/E/g'| iconv -f UTF-8 -t ascii//TRANSLIT//IGNORE|sed 's/"//g'|sed "s/\`//g")
 if [[ $OutputAlbumFolder == *"'"* ]]
 then
 OutputAlbumFolder="$Album_TID"
@@ -479,10 +480,10 @@ FileSize=$(ls -lah "$thefilelist" | awk '{print $5}'|sed 's/M/ Mo/g'|sed 's/B/ B
 
 FilenoextTMP="${thefilelist##*/}"
 # fileNoExt
-fileNoExt=$(echo "$FilenoextTMP" |sed "s/.$extension//g"| sed 's/\$/USD/g'|sed 's/û/u/g'|sed 's/ê/e/g'| iconv -f UTF-8 -t ascii//TRANSLIT//IGNORE|sed 's/"//g'|sed "s/\`//g"| sed 's/:/-/g')
+fileNoExt=$(echo "$FilenoextTMP" |sed "s/.$extension//g"| sed 's/\$/USD/g'|sed 's/û/u/g'|sed 's/ê/e/g'|sed 's/é/e/g'|sed 's/É/E/g'| iconv -f UTF-8 -t ascii//TRANSLIT//IGNORE|sed 's/"//g'|sed "s/\`//g"| sed 's/:/-/g')
 # FileOutNoExt
 
-FileOutNoExt=$(echo "$traxNumber"_"$TrackTitle"| sed 's/\$/USD/g'|sed 's/û/u/g'|sed 's/ê/e/g'| sed "s/\//_/g"| iconv -f UTF-8 -t ascii//TRANSLIT//IGNORE|sed 's/"//g'|sed "s/\`//g" | sed 's/\//_/g'| sed 's/:/-/g')
+FileOutNoExt=$(echo "$traxNumber"_"$TrackTitle"| sed 's/\$/USD/g'|sed 's/û/u/g'|sed 's/ê/e/g'|sed 's/é/e/g'|sed 's/É/E/g'| sed "s/\//_/g"| iconv -f UTF-8 -t ascii//TRANSLIT//IGNORE|sed 's/"//g'|sed "s/\`//g" | sed 's/\//_/g'| sed 's/:/-/g')
 
 # If song name is toooo looong then change it to TID + DISK # +TRACK #
 fileNoExtLegth=$(echo "$FileOutNoExt"| awk '{print length}')

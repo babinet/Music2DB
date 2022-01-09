@@ -119,6 +119,10 @@ fi
 #compagnies
 compagniesLignes=$(cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n'|awk -F'id="release-companies' '{print $2}' |awk -F'<ul' '{print $2}'|awk -F'</ul>' '{print $1}'| sed 's/<li/\
 <li/g' |awk NF)
+
+
+
+
 #Release note
 releaseNoteString=$(echo "id=\"release-notes")
 if grep -q "$releaseNoteString" "$Path2album"/_album_info/ALBUM_Page.html
@@ -486,9 +490,208 @@ echo "SupportTypeRelease=\$(cat \"\$Path2album\"/_album_info/CSVs/info_support.c
 
 fi
 
+# Reccord Compagnie Album (release-companies)
+if [ -f "$Path2album"/_album_info/CSVs/RecordCompagny.csv ]
+then
+echo "${green}---> RecordCompagny.csv is present in                 : ${orange}"$Path2album"/_album_info/CSVs/RecordCompagny.csv${reset}"
+else
+echo "${white}---> Looking for record compoagny info            : Update_Nodes.sh  <---${reset}"
+mkdir -p "$dir"/tmp
+recordCompagnyString=$(echo "id=\"release-companies")
+if grep -q "$recordCompagnyString" "$Path2album"/_album_info/ALBUM_Page.html
+then
+echo "${green}---> compagny information are present in          : ${white}"$Path2album"/_album_info/ALBUM_Page.html"
+
+compagniesLignes=$(cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n' |tr -d '\r'|awk -F'id="release-companies' '{print $2}'|awk -F'<ul' '{print $2}'|awk -F'</ul>' '{print $1}'| sed 's/<li/\
+<li/g' |awk NF |awk '/\label\//')
+
+#echo $compagniesLignes
+cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n' |tr -d '\r'|awk -F'id="release-companies' '{print $2}'|awk -F'<ul' '{print $2}'|awk -F'</ul>' '{print $1}'| sed 's/<li/\
+<li/g' |awk NF |awk '/\label\//'
+
+IFS=$'\n'       # Processing line
+set -f          # disable globbing
+
+if [ -f tmp/recordCompagnyTMP ]
+then
+rm tmp/recordCompagnyTMP
+fi
+
+for recordCompagny in $(echo "$compagniesLignes")
+do
+
+CompagnyInfoPrefix=$(echo "$recordCompagny" | awk -F'<li>' '{print $2}'| awk -F'>' '{print $2}'| awk -F'<' '{print $1}')
+CompagnyAddress=$(echo "$recordCompagny" | awk -F'<a href="' '{print $2}'| awk -F'"' '{print $1}'|sed 's/\/fr//g')
+CompagnyTID=$(echo "$CompagnyAddress" | awk -F'/label/' '{print $2}'|awk -F'-' '{print $1}')
+CompagnyID=$(echo "$CompagnyAddress" | awk -F'/label/' '{print $2}'|awk -F'"' '{print $1}')
+compagnyInnerHTML=$(echo "$recordCompagny" | awk -F'<a href="' '{print $2}'| awk -F'>' '{print $2}'| awk -F'<' '{print $1}')
+echo "$CompagnyInfoPrefix|$CompagnyAddress|$CompagnyID|$CompagnyTID|$compagnyInnerHTML" >> tmp/recordCompagnyTMP
+
+done
+echo "CompagnyInfoPrefix|CompagnyAddress|CompagnyID|CompagnyTID|compagnyInnerHTML" > "$Path2album"/_album_info/CSVs/RecordCompagny.csv
+cat tmp/recordCompagnyTMP >> "$Path2album"/_album_info/CSVs/RecordCompagny.csv
+else
+echo "${red}---> compagny information are not present"
+fi
+
+fi
 
 
+##
+### RECCORD COMPAGNY
+##
+if [ -f "$Path2album"/_album_info/CSVs/RecordCompany.csv ]
+then
+echo "${green}---> RecordCompagny.csv is present in                 : ${orange}"$Path2album"/_album_info/CSVs/RecordCompagny.csv${reset}"
+else
+echo "${white}---> Looking for record compoagny info            : Update_Nodes.sh  <---${reset}"
+mkdir -p "$dir"/tmp
+recordCompagnyString=$(echo "id=\"release-companies")
+if grep -q "$recordCompanyString" "$Path2album"/_album_info/ALBUM_Page.html
+then
+echo "${green}---> compagny information are present in          : ${white}"$Path2album"/_album_info/ALBUM_Page.html"
 
+companiesLignes=$(cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n' |tr -d '\r'|awk -F'id="release-companies' '{print $2}'|awk -F'<ul' '{print $2}'|awk -F'</ul>' '{print $1}'| sed 's/<li/\
+<li/g' |awk NF |awk '/\label\//')
+
+#echo $compagniesLignes
+cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n' |tr -d '\r'|awk -F'id="release-companies' '{print $2}'|awk -F'<ul' '{print $2}'|awk -F'</ul>' '{print $1}'| sed 's/<li/\
+<li/g' |awk NF |awk '/\label\//'
+
+IFS=$'\n'       # Processing line
+set -f          # disable globbing
+
+if [ -f tmp/recordCompanyTMP ]
+then
+rm tmp/recordCompanyTMP
+fi
+
+for recordCompany in $(echo "$companiesLignes")
+do
+
+CompanyInfoPrefix=$(echo "$recordCompany" | awk -F'<li>' '{print $2}'| awk -F'>' '{print $2}'| awk -F'<' '{print $1}')
+CompanyAddress=$(echo "$recordCompany" | awk -F'<a href="' '{print $2}'| awk -F'"' '{print $1}'|sed 's/\/fr//g')
+CompanyTID=$(echo "$CompanyAddress" | awk -F'/label/' '{print $2}'|awk -F'-' '{print $1}')
+CompanyID=$(echo "$CompanyAddress" | awk -F'/label/' '{print $2}'|awk -F'"' '{print $1}')
+companyInnerHTML=$(echo "$recordCompany" | awk -F'<a href="' '{print $2}'| awk -F'>' '{print $2}'| awk -F'<' '{print $1}')
+echo "$CompanyInfoPrefix|$CompanyAddress|$CompanyID|$CompanyTID|$companyInnerHTML" >> tmp/recordCompanyTMP
+
+done
+echo "CompanyInfoPrefix|CompagnyAddress|CompagnyID|CompagnyTID|compagnyInnerHTML" > "$Path2album"/_album_info/CSVs/RecordCompany.csv
+cat tmp/recordCompanyTMP >> "$Path2album"/_album_info/CSVs/RecordCompany.csv
+else
+echo "${red}---> compagny information are not present"
+fi
+
+fi
+
+mkdir -p tmp/RecordCompany
+if [ -f "$Path2album"/_album_info/CSVs/RecordCompany.csv ]
+then
+awk '(NR>1)' "$Path2album"/_album_info/CSVs/RecordCompany.csv > tmp/RecordCompanyLines
+index=00
+IFS=$'\n'       # Processing line
+set -f          # disable globbing
+for linecompany in $(cat tmp/RecordCompanyLines)
+do
+index=$(( index+1 ))
+echo $purple $index $linecompany
+infoprefix=$(echo "$linecompany" |awk -F'|' '{print $1}')
+tidcomp=$(echo "$linecompany" |awk -F'|' '{print $4}')
+echo "infoprefix_$index
+$infoprefix" > tmp/RecordCompany/infoprefix_"$index".txt
+echo "tidcomp$index
+$tidcomp" > tmp/RecordCompany/tidcomp_"$index".txt
+done
+
+# Prefix
+if [ -f tmp/RecordCompany/infoprefix_1.txt ]
+then
+infoprefix_1=$(cat tmp/RecordCompany/infoprefix_1.txt|awk 'NR == 2' |awk -F'|' '{print $1}')
+else
+infoprefix_1=""
+fi
+
+if [ -f tmp/RecordCompany/infoprefix_2.txt ]
+then
+infoprefix_2=$(cat tmp/RecordCompany/infoprefix_2.txt |awk 'NR == 2' |awk -F'|' '{print $1}')
+else
+infoprefix_2=""
+fi
+
+if [ -f tmp/RecordCompany/infoprefix_3.txt ]
+then
+infoprefix_3=$(cat   tmp/RecordCompany/infoprefix_3.txt |awk 'NR == 2' |awk -F'|' '{print $1}')
+else
+infoprefix_3=""
+fi
+
+if [ -f tmp/RecordCompany/infoprefix_4.txt ]
+then
+infoprefix_4=$(cat tmp/RecordCompany/infoprefix_4.txt | awk 'NR == 2' |awk -F'|' '{print $1}')
+else
+infoprefix_4=""
+fi
+
+if [ -f tmp/RecordCompany/infoprefix_5.txt ]
+then
+infoprefix_5=$(cat tmp/RecordCompany/infoprefix_5.txt |awk 'NR == 2' |awk -F'|' '{print $1}')
+else
+infoprefix_5=""
+fi
+
+if [ -f tmp/RecordCompany/infoprefix_6.txt ]
+then
+infoprefix_5=$(cat tmp/RecordCompany/infoprefix_6.txt |awk 'NR == 2' |awk -F'|' '{print $1}')
+else
+infoprefix_6=""
+fi
+# TIDs
+if [ -f tmp/RecordCompany/tidcomp_1.txt ]
+then
+tidcomp_1=$(cat tmp/RecordCompany/tidcomp_1.txt|awk 'NR == 2' |awk -F'|' '{print $1}')
+else
+tidcomp_1=""
+fi
+
+if [ -f tmp/RecordCompany/tidcomp_2.txt ]
+then
+tidcomp_2=$(cat tmp/RecordCompany/tidcomp_2.txt |awk 'NR == 2' |awk -F'|' '{print $1}')
+else
+tidcomp_2=""
+fi
+
+if [ -f tmp/RecordCompany/tidcomp_3.txt ]
+then
+tidcomp_3=$(cat   tmp/RecordCompany/tidcomp_3.txt |awk 'NR == 2' |awk -F'|' '{print $1}')
+else
+tidcomp_3=""
+fi
+
+if [ -f tmp/RecordCompany/tidcomp_4.txt ]
+then
+tidcomp_4=$(cat tmp/RecordCompany/tidcomp_4.txt | awk 'NR == 2' |awk -F'|' '{print $1}')
+else
+tidcomp_4=""
+fi
+
+if [ -f tmp/RecordCompany/tidcomp_5.txt ]
+then
+tidcomp_5=$(cat tmp/RecordCompany/tidcomp_5.txt |awk 'NR == 2' |awk -F'|' '{print $1}')
+else
+tidcomp_5=""
+fi
+
+if [ -f tmp/RecordCompany/tidcomp_6.txt ]
+then
+tidcomp_5=$(cat tmp/RecordCompany/tidcomp_6.txt |awk 'NR == 2' |awk -F'|' '{print $1}')
+else
+tidcomp_6=""
+fi
+echo "infoprefix_1|tidcomp_1|infoprefix_2|tidcomp_2|infoprefix_3|tidcomp_3|infoprefix_4|tidcomp_4|infoprefix_5|tidcomp_5|infoprefix_6|tidcomp_6
+$infoprefix_1|$tidcomp_1|$infoprefix_2|$tidcomp_2|$infoprefix_3|$tidcomp_3|$infoprefix_4|$tidcomp_4|$infoprefix_5|$tidcomp_5|$infoprefix_6|$tidcomp_6"
+
+fi
 
 
 

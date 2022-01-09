@@ -33,9 +33,9 @@ echo "${white}---> i'm getting tracks taginfomation on Discogs"
 source tmp/tmp_Bash
 
 
-NuberOfTracks=$(cat tmp/listtmp.txt|wc -l | sed 's/      //g')
-echo "${white}---> Number of tracks in this disk                     :${orange}$NuberOfTracks"
-echo "${white}---> The track is numbered                             :${orange}$traxNumber"
+NuberOfTracks=$(cat tmp/listtmp.txt|wc -l | sed 's/      //g'|tr -d ' ')
+echo "${white}---> Number of tracks in this disk                    :${orange}$NuberOfTracks"
+echo "${white}---> The track is numbered                            :${orange}$traxNumber"
 if [ -f diskinfo/1_info.csv ]
 then
 rm  diskinfo/*_info.csv
@@ -48,16 +48,22 @@ then
 diskinfoDISCOGSID=$(cat diskinfo/diskinfoDISCOGSID)
 fi
 echo DISCOGSID $DISCOGSID
-#echo "1" > tmp/default_choice
+#echo "2" > tmp/default_choice
 if [ -f tmp/default_choice ]
 then
 default_choice=$(cat tmp/default_choice)
 echo "${green}---> tmp/default_choice id already checkecked         :$orange$default_choice"
 else
 echo "${green}########################################################################################################################################
----> ${white}---> Nuber of tracks in this disk is              :${orange}$NuberOfTracks
----> ${white}The current processed release page is             :${orange}$AdressReleaseDiscogs${green}
+${white}---> Nuber of tracks in this disk is                  :${orange}$NuberOfTracks
+${white}---> The current processed release page is            :${orange}$AdressReleaseDiscogs${green}
 ########################################################################################################################################"
+echo "${white}---> The current track structure \$traxNumber         :${orange}$traxNumber"
+trackOnHTML=$(cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n' |awk -F'<h3>Tracklist</h3>' '{print $2}'|awk -F'</section>' '{print $1}'| sed 's/<tr/\
+<tr/g' | awk '/<tr/'|awk '/data-track-position/'| awk -F'td class="trackPos_2RCje">' '{print $2}'| awk -F'</td>' '{print "Track : "$1"\t"}' | tr '\n' ' '| awk '{print $0}')
+echo "${white}Track strucure in the html page is like this :
+${orange}$trackOnHTML${reset}"
+
 read -p "Choices
 1 = File name               :
 2 = Discogs name            :
@@ -423,7 +429,7 @@ echo "10_pers|10_info
 |" > diskinfo/10_info.csv
 fi
 
-
+#read -p "Wait !" WAIT
 
 
 paste -d '|' diskinfo/1_info.csv diskinfo/2_info.csv diskinfo/3_info.csv diskinfo/4_info.csv diskinfo/5_info.csv diskinfo/6_info.csv diskinfo/7_info.csv diskinfo/8_info.csv diskinfo/9_info.csv diskinfo/10_info.csv > diskinfo/Trackinfo.csv
