@@ -77,27 +77,25 @@ fi
 Album_Title=$(cat tmp/_album_info/Album_Title.csv | awk  'NR == 2')
 
 # Disc
-
-
 if [[ -f tmp/disc.csv ]]
 then
-cat tmp/disc.csv | awk -F'/' '{print $1}' | sed 's/DISC/Disc/g' | sed 's/disc/Disc/g' > tmp/_album_info/disctmp.csv
+cat tmp/disc.csv | awk -F'/' '{print $1}' | sed 's/DISC/Disc/g' | sed 's/disc/Disc/g'|tr -d ' ' > tmp/_album_info/disctmp.csv
 mv tmp/_album_info/disctmp.csv tmp/_album_info/current_disc.csv
 elif [[ -f tmp/DISC.csv ]]
 then
-cat tmp/DISC.csv | awk -F'/' '{print $1}' | sed 's/DISC/Disc/g' | sed 's/disc/Disc/g' > tmp/_album_info/disctmp.csv
+cat tmp/DISC.csv | awk -F'/' '{print $1}' | sed 's/DISC/Disc/g' | sed 's/disc/Disc/g'|tr -d ' ' > tmp/_album_info/disctmp.csv
 mv tmp/_album_info/disctmp.csv tmp/_album_info/current_disc.csv
 elif [[ -f tmp/TPA.csv ]]
 then
-cat tmp/TPA.csv | awk -F'/' '{print $1}' | sed 's/TPA/Disc/g' | sed 's/tpa/Disc/g' > tmp/_album_info/disctmp.csv
+cat tmp/TPA.csv | awk -F'/' '{print $1}' | sed 's/TPA/Disc/g' | sed 's/tpa/Disc/g'|tr -d ' ' > tmp/_album_info/disctmp.csv
 mv tmp/_album_info/disctmp.csv tmp/_album_info/current_disc.csv
 elif [[ -f tmp/disk.csv ]]
 then
-cat tmp/disk.csv | awk -F'/' '{print $1}' | sed 's/Disk/Disc/g' | sed 's/disk/Disc/g' | sed 's/DISK/Disc/g' > tmp/_album_info/disctmp.csv
+cat tmp/disk.csv | awk -F'/' '{print $1}' | sed 's/Disk/Disc/g' | sed 's/disk/Disc/g' | sed 's/DISK/Disc/g'|tr -d ' ' > tmp/_album_info/disctmp.csv
 mv tmp/_album_info/disctmp.csv tmp/_album_info/current_disc.csv
 elif [[ -f tmp/Disc.csv ]]
 then
-cat tmp/Disc.csv | awk -F'/' '{print $1}' | sed 's/DISC/Disc/g' | sed 's/disc/Disc/g' > tmp/_album_info/disctmp.csv
+cat tmp/Disc.csv | awk -F'/' '{print $1}' | sed 's/DISC/Disc/g' | sed 's/disc/Disc/g'|tr -d ' ' > tmp/_album_info/disctmp.csv
 mv tmp/_album_info/disctmp.csv tmp/_album_info/current_disc.csv
 else
 echo "Disc
@@ -409,13 +407,13 @@ echo "${green}---> DISCOGSID has been found in the current ID3 tags : ${orange}t
 if [ -f "$Path2album"/_album_info/CSVs/DISCOGSID.csv ]
 then
 echo "${white}---> DISCOGSID has been found in _album_info source   : ${red}"$Path2album"/_album_info/CSVs/DISCOGSID.csv"
-txtfileDISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv|awk 'NR == 2'|sed 's/è/e/g'|sed 's/à/a/g'|sed 's/ç/c/g')
+txtfileDISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv|awk 'NR == 2'|sed 's/è/e/g'|sed 's/à/a/g'|sed 's/ç/c/g'|sed 's/\?$//')
 echo "${green}---> The DISCOGSID id in the CSVs folder will be used : ${orange}$txtfileDISCOGSID"
-DISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv| awk  'NR == 2'|sed 's/è/e/g'|sed 's/à/a/g'|sed 's/ç/c/g')
+DISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv| awk  'NR == 2'|sed 's/è/e/g'|sed 's/à/a/g'|sed 's/ç/c/g'|sed 's/\?$//')
 echo "DISCOGSID=\"$DISCOGSID\"" >> tmp/tmp_Bash
 else
-cat tmp/DISCOGSID.csv |sed 's/è/e/g'|sed 's/à/a/g'|sed 's/ç/c/g' > "$Path2album"/_album_info/CSVs/DISCOGSID.csv
-DISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv| awk  'NR == 2'|sed 's/è/e/g'|sed 's/à/a/g'|sed 's/ç/c/g')
+cat tmp/DISCOGSID.csv |sed 's/è/e/g'|sed 's/à/a/g'|sed 's/ç/c/g'|sed 's/\?$//' > "$Path2album"/_album_info/CSVs/DISCOGSID.csv
+DISCOGSID=$(cat "$Path2album"/_album_info/CSVs/DISCOGSID.csv| awk  'NR == 2'|sed 's/è/e/g'|sed 's/à/a/g'|sed 's/ç/c/g'|sed 's/\?$//')
 echo "DISCOGSID=\"$DISCOGSID\"" >> tmp/tmp_Bash
 fi
 else

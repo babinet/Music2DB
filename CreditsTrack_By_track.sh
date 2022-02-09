@@ -56,7 +56,7 @@ echo "${green}---> tmp/default_choice id already checkecked         :$orange$def
 else
 echo "${green}########################################################################################################################################
 ${white}---> Nuber of tracks in this disk is                  :${orange}$NuberOfTracks
-${white}---> The current processed release page is            :${orange}$AdressReleaseDiscogs${green}
+${white}---> The current processed release page is            :${orange}$AlbumADDRESS${green}
 ########################################################################################################################################"
 echo "${white}---> The current track structure \$traxNumber         :${orange}$traxNumber"
 trackOnHTML=$(cat "$Path2album"/_album_info/ALBUM_Page.html | tr -d '\n' |awk -F'<h3>Tracklist</h3>' '{print $2}'|awk -F'</section>' '{print $1}'| sed 's/<tr/\
@@ -104,8 +104,11 @@ fi
 
 IFS=$'\n'       # Processing line
 set -f          # disable globbing
+dumbINDEX="000"
 for TheLineInfoOnTrack in $(cat diskinfo/temp2.html)
 do
+dumbINDEX=$(( dumbINDEX+1 ))
+
 # TracTitle
 ToloopAfter=$(echo "$TheLineInfoOnTrack" |sed 's/<div class="measure_17Kyu credits_12-wp" aria-hidden="true">/\
 <div class="measure_17Kyu credits_12-wp" aria-hidden="true">/g' |awk '!/aria-hidden="true"/'|sed 's/<td class="artist_3zAQD">/\
@@ -114,14 +117,18 @@ ToloopAfter=$(echo "$TheLineInfoOnTrack" |sed 's/<div class="measure_17Kyu credi
 <\/span><\/div><div>/g' |sed 's/credits_12-wp/\
 credits_12-wp/g'|awk NF)
 TrackTitle=$(echo "$TheLineInfoOnTrack" |awk '/<span class="trackTitle/' | awk -F'<span class="trackTitle_CTKp4">' '{print $2}'| awk -F'<' '{print $1}'|sed "s/\&#x27;/'/g"| sed 's/\&amp;/\&/g'|sed 's/\&quot;/"/g'|awk NF)
-Track_positionTMP=$(echo "$TheLineInfoOnTrack" |awk -F'trackPos_2RCje">' '{print $2}'|awk -F'<' '{print $1}'|awk NF| sed 's/^0*//')
+Track_positionTMP=$(echo "$TheLineInfoOnTrack" |awk -F'trackPos_2RCje">' '{print $2}'|awk -F'<' '{print $1}'|awk NF| sed 's/^0*//'|tr -d ' ')
 if [[ "$Track_positionTMP" == *-* ]]
 then
-disk=$(echo "$Track_positionTMP" | awk -F'-' '{print $1}'|sed 's/CD//g'| sed 's/^0*//')
-track=$(echo "$Track_positionTMP" | awk -F'-' '{print $2}'|sed 's/CD//g'| sed 's/^0*//')
-Track_position=$(echo "$disk"-"$track"|sed 's/CD//g'| sed 's/^0*//')
+disk=$(echo "$Track_positionTMP" | awk -F'-' '{print $1}'|sed 's/CD//g'| sed 's/^0*//'|tr -d ' ')
+track=$(echo "$Track_positionTMP" | awk -F'-' '{print $2}'|sed 's/CD//g'| sed 's/^0*//'|tr -d ' ')
+Track_position=$(echo "$disk"-"$track"|sed 's/CD//g'| sed 's/^0*//'|tr -d ' ')
 else
-Track_position=$(echo "$TheLineInfoOnTrack" |awk -F'trackPos_2RCje">' '{print $2}'|awk -F'<' '{print $1}'|awk NF| sed 's/^0*//'|awk '{print "1-"$0}')
+Track_position=$(echo "$TheLineInfoOnTrack" |awk -F'trackPos_2RCje">' '{print $2}'|awk -F'<' '{print $1}'|awk NF| sed 's/^0*//'|awk '{print "1-"$0}'|tr -d ' ')
+fi
+if [ "$Track_position" == "" ]
+then
+Track_position="$dumbINDEX"
 fi
 echo "${orange}$Track_position Track_position"
 echo "Track_position_ROWSEP" >>diskinfo/tempo.txt

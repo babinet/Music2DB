@@ -75,7 +75,7 @@ done
 }
 
 # Declare the array
-linux=('ScanNGen' 'MANUAL_BOOTLEGS' 'Update_Nodes' 'Cue_Rename' 'Tracks_Number_from_Name' 'Cue_2_Tracks' 'Generate_CSV_and_Files' 'Renumber_TrackBtrack_and_Name' 'Renumber_TrackBtrack_only' 'track_by_Track_Number' 'Mass_Print_Artists' 'FFmpef_CueSplit' 'Mass_Print_Album_N_DiscogsID' 'DeleteFields')
+linux=('ScanNGen' 'MANUAL_BOOTLEGS' 'Update_Nodes' 'Cue_Rename' 'Tracks_Number_from_Name' 'Cue_2_Tracks' 'Generate_CSV_and_Files' 'Rename_TrackBtrack' 'Renumber_TrackBtrack_and_Name' 'Renumber_TrackBtrack_only' 'track_by_Track_Number' 'Mass_Print_Artists' 'FFmpef_CueSplit' 'Mass_Print_Album_N_DiscogsID' 'DeleteFields')
 
 # Call the subroutine to create the menu
 menu_from_array "${linux[@]}"
@@ -83,6 +83,10 @@ menu_from_array "${linux[@]}"
 if [ $item.sh = ScanNGen.sh ]
 then
 ./ScanNGen.sh
+fi
+if [ $item.sh = Rename_TrackBtrack.sh ]
+then
+./Rename_TrackBtrack.sh
 fi
 
 if [ $item.sh = Update_Nodes.sh ]

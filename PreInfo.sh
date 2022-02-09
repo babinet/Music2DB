@@ -55,6 +55,9 @@ cat tmp/temp.txt |awk '/    TITLE/'| awk -F'TITLE           : ' '{print "TITLE  
 cat tmp/temp.txt |awk '/    album           : /'| awk -F'    album           : ' '{print "ALBUM  : "$2}' >> tmp/songslistTMP.txt
 cat tmp/temp.txt |awk '/    title           : /'| awk -F'    title           : ' '{print "TITLE  : "$2}' >> tmp/songslistTMP.txt
 cat tmp/temp.txt |awk '/    artist          : /'| awk -F'    artist          : ' '{print "ARTIST : "$2}' >> tmp/songslistTMP.txt
+cat tmp/temp.txt |awk '/  Duration: /'| awk -F'Duration: ' '{print $2}'| awk -F', ' '{print "Duration : "$1}' >> tmp/songslistTMP.txt
+cat tmp/temp.txt |awk '/    track           : /'| awk -F'    track           : ' '{print "Track # : "$2}' >> tmp/songslistTMP.txt
+
 echo "-----------------------------------------------------------------" >> tmp/songslistTMP.txt
 
 done

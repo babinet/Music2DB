@@ -144,9 +144,10 @@ echo "${green}---> source nouvell variables in                      ${white}: ${
 
 if [ -f "$Path2album"/_album_info/Album_ADDRESS.csv ]
 then
-AlbumADDRESS=$(cat "$Path2album"/_album_info/Album_ADDRESS.csv| awk  'NR == 2')
-DISCOGSID="${AlbumADDRESS##*/}"
-echo $red DISCOGSID DISCOGSID DISCOGSID DISCOGSID $DISCOGSID
+AlbumADDRESS=$(cat "$Path2album"/_album_info/Album_ADDRESS.csv| awk  'NR == 2'|tr -d '\n' | tr -d '\r')
+DISCOGSIDtmp="${AlbumADDRESS##*/}"
+DISCOGSID="$(echo "$DISCOGSIDtmp"| awk  'NR == 2'|tr -d '\n' | tr -d '\r')"
+echo $red DISCOGSID DISCOGSID DISCOGSID DISCOGSID $DISCOGSID test
 fi
 
 
@@ -214,7 +215,7 @@ ArtistID=$(echo "$AddressPageArtist"| awk -F'/artist/' '{print $2}' )
 fi
 
 ArtistMachineNameTMP=${ArtistID#*-}
-ArtistMachineName=$(echo "$ArtistMachineNameTMP"|sed 's/é/e/g'|sed 's/É/E/g')
+ArtistMachineName=$(echo "$ArtistMachineNameTMP"|sed 's/é/e/g'|sed 's/É/E/g' | sed 's/\\u00f6/o/g'| sed 's/ö/o/g' )
 if [ -f ""$Path2album"/_album_info/Various.csv" ]
 then
 ArtistMachineName="Various"
@@ -263,6 +264,16 @@ then
 AlbumADDRESS=$(cat ""$Path2album"/_album_info/Album_ADDRESS.csv" | awk  'NR == 2')
 echo "ALBUM_ID_DISCOGS" > tmp/ALBUM_ID_DISCOGS.csv
 tmpID="${AlbumADDRESS##*/}"
+
+
+
+
+
+echo $purple tmpID tmpID $tmpID AlbumADDRESS $AlbumADDRESS 6000
+
+
+
+
 echo "$tmpID" >> tmp/ALBUM_ID_DISCOGS.csv
 echo "Album_TID" > tmp/Album_TID.csv
 echo "$tmpID" | awk -F'-' '{print $1}' >> tmp/Album_TID.csv
@@ -274,7 +285,14 @@ Album_TID=$(cat "$Path2album"/_album_info/Album_TID.csv | awk  'NR == 2')
 OutputAlbumFolderTMP=${ID_DISCOGS#*-}
 OutputAlbumFolder=$(echo "$OutputAlbumFolderTMP"-"$Album_TID")
 echo "${white}---> Album address ${green}found !                            : ${orange}$AlbumADDRESS"
-curl -o ""$Path2album"/_album_info/ALBUM_Page.html" -LO "$AlbumADDRESS"
+
+
+echo "AlbumADDRESS"=\"$AlbumADDRESS\" >>tmp/tmp_Bash
+
+
+
+
+wget -O ""$Path2album"/_album_info/ALBUM_Page.html" "$AlbumADDRESS"
 else
 searchAddresAlbumArtist=$(echo "$searchAlbummachinename\&artist=$searchArtistmachinename"|tr -d '\')
 curl -o tmp/_info_Artist/Search_result_Discogs.html -LO $searchAddresAlbumArtist
@@ -304,10 +322,25 @@ rm tmp/search_results_Albumtmp2 tmp/search_results_Albumtmp
 
 cat tmp/Album_ADDRESS.csv |awk NF > ""$Path2album"/_album_info/Album_ADDRESS.csv"
 AlbumADDRESS=$(cat ""$Path2album"/_album_info/Album_ADDRESS.csv" | awk  'NR == 2')
-curl -o ""$Path2album"/_album_info/ALBUM_Page.html" -LO "$AlbumADDRESS"
+wget -O ""$Path2album"/_album_info/ALBUM_Page.html" "$AlbumADDRESS"
+
+
+
+
+echo $purple tmpID tmpID $tmpID AlbumADDRESS $AlbumADDRESS 6010
 
 if [ -f ""$Path2album"/_album_info/ALBUM_Page.html" ]
 then
+
+
+
+
+echo $purple tmpID tmpID $tmpID AlbumADDRESS $AlbumADDRESS 6010.5
+
+
+
+
+
 echo "$MusicAlbum_ID" > "$Path2album"/_album_info/MusicAlbum_ID.csv
 cat ""$Path2album"/_album_info/Album_Page.html" |tr -d "\n"|awk -F'@type":"MusicAlbum","@id"' '{print $2}'|awk -F'"' '{print $2}' >> "$Path2album"/_album_info/MusicAlbum_ID.csv
 if [ -f  tmp/Album_TID.csv ]
@@ -325,8 +358,11 @@ then
 Album_TID=$(cat ""$Path2album"/_album_info/Album_TID.csv"| awk  'NR == 2')
 ID_DISCOGS=$(cat ""$Path2album"/_album_info/ALBUM_ID_DISCOGS.csv"| awk  'NR == 2'|sed 's/é/e/g'|sed 's/è/e/g'|sed 's/à/a/g')
 
+echo $purple tmpID tmpID $tmpID AlbumADDRESS $AlbumADDRESS 6011
 
 echo $purple $DISCOGSID DISCOGSID
+
+echo "AlbumADDRESS"=\"$AlbumADDRESS\" >>tmp/tmp_Bash
 
 
 
@@ -347,7 +383,7 @@ then
 OutputAlbumFolder="$Album_TID"
 echo "${red}---> Percent in name % in                               : ${green}$OutputAlbumFolder"
 else
-
+echo $purple OutputAlbumFolder 10000000000
 OutputAlbumFolder=$(echo "$OutputAlbumFolderTMP"-"$Album_TID" | sed 's/\$/USD/g'|sed 's/û/u/g'|sed 's/ê/e/g'|sed 's/é/e/g'|sed 's/É/E/g'| iconv -f UTF-8 -t ascii//TRANSLIT//IGNORE|sed 's/"//g'|sed "s/\`//g")
 if [[ $OutputAlbumFolder == *"'"* ]]
 then
@@ -376,7 +412,7 @@ done < tmp/imglist.txt
 
 else
 echo "${bg_green}${white}---> Downloading images from Discogs.com <---$reset"
-curl -o tmp/image_gallery -LO "$images_gallery_address"
+wget -O tmp/image_gallery "$images_gallery_address"
 cat tmp/image_gallery | tr -d "\n" |awk -F'id="view_images"' '{print $2}' | sed 's/><img src="/\
 /g'|awk -F'"' '{print $1}' | sed "1,1d; $d"|sed '$d' > tmp/image_listtmp
 mkdir -p tmp/img
@@ -386,7 +422,7 @@ while read imagegalleryline
 do
 count=$(( count+1 ))
 imagename=$(echo "$Album_TID"_"$count.jpg")
-curl -o "tmp/img/$imagename" -LO "$imagegalleryline"
+wget -O "tmp/img/$imagename" "$imagegalleryline"
 done < tmp/image_listtmp
 
 find tmp/img/ -name *.jpg | sed 's/\/\//\//g' | sort -V > tmp/imglist.txt
@@ -629,6 +665,11 @@ then
 echo "${white}---> Wave file fomat detected No Image encoding !"
 ffmpeg -i "$thefilelist" -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$traxNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" -metadata compilation="$compilation" -write_xing 0 -c copy ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".wav
 echo ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".wav > tmp/SOUNDFILE_BASE.txt
+elif [ "$extension" == aif ]
+then
+echo "${white}---> AIFF file fomat detected No Image encoding ! ${orange}converting to .flac"
+ffmpeg -i "$thefilelist" -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$traxNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" -metadata compilation="$compilation" -write_xing 0 ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".flac
+echo ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".flac > tmp/SOUNDFILE_BASE.txt
 
 
 
@@ -656,6 +697,16 @@ then
 echo "${white}---> OGG VOBIS Audio rule ps d'image"
 ffmpeg -i "$thefilelist" -codec:v copy -codec:a libmp3lame -q:a 2 -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$traxNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".mp3  -write_xing 0
 echo ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".mp3 > tmp/SOUNDFILE_BASE.txt
+elif [ "$extension" == aif ]
+then
+echo "${white}---> aif Audio rule pas d'image ${orange}AIFF"
+ffmpeg -i "$thefilelist" -codec:v copy -codec:a libmp3lame -q:a 2 -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$traxNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".wav  -write_xing 0
+echo ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt".wav > tmp/SOUNDFILE_BASE.txt
+
+
+
+
+
 else
 echo "${white}---> pas d'image ffmpeg -c copy"
 ffmpeg -i "$thefilelist" -c copy -metadata title="$TrackTitle" -metadata album="$Album_Title" -metadata track="$traxNumber" -metadata UUID="$UUID" -metadata totaltrack="$TRACKTOTAL" -metadata DISCOGSID="$ID_DISCOGS" -metadata genre="$GenreToFile" -metadata artist="$Artist" -metadata composer="$ArtistsAlbum2file" -metadata date="$Date" -metadata totaldisks="$DISCTOTAL" -metadata disk="$DiscNumber" ../_Output/"$ArtistMachineName"/"$OutputAlbumFolder"/Disc_"$DiscNumber"/"$FileOutNoExt"."$extension"  -write_xing 0
