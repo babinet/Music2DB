@@ -24,7 +24,7 @@ ilghtpurple=`tput setaf 33`
 lightred=`tput setaf 161`
 darkblue=`tput setaf 19`
 echo "${white}---> I AM Cue_FFMPEG_extract.sh"
-echo "${white}---> I am dealing with the ${orange}24 bit .flac${white} audio and ${orange}liste.cue${white} file"
+echo "${white}---> I am dealing with the ${orange}24 bit .flac${white} audio and ${orange}list.cue${white} file"
 
 dir=$(
 cd -P -- "$(dirname -- "$0")" && pwd -P
